@@ -26,6 +26,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+
+    _deviceId = _userId = null;
     _initializeApp();
   }
 
@@ -51,10 +53,21 @@ class _HomeState extends State<Home> {
             return Card(
               child: Column (
                 children: [
+                  const SizedBox(
+                    height: 20.0,
+                  ),
                   Row (
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text('User ID: $_userId'),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  Row (
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
                       Text('Device ID: $_deviceId'),
                     ],
                   ),
