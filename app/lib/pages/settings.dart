@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
 
@@ -26,7 +25,6 @@ class _SettingsState extends State<Settings> {
 
   void _initializeApp() async {
     _deviceId = (await DeviceService().getId())!;
-    _userId = (await ApiService().getUserId(_deviceId!));
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
