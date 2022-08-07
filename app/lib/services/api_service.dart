@@ -23,7 +23,8 @@ class ApiService {
   Future<String?> getUserId(String deviceId) async {
     try {
       var url = Uri.parse('$baseUrl/api/Users/$deviceId');
-      var response = await http.put(url);
+      var response = await http.put(url, headers: { "Content-Type" : "application/json"});
+      // var response = await http.put(url);
       if(response.statusCode == 200) {
         return response.body;
       }
