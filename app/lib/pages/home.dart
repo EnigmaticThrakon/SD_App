@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
+import '../models/user.dart';
+import '../services/signalr_service.dart';
 import 'add_unit.dart';
 
 class Home extends StatefulWidget {
@@ -15,20 +17,23 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late String? _deviceId;
   late String? _userId;
+  late User _currentUser;
   //late List<Unit> _units = null;
 
   @override
   void initState() {
     super.initState();
 
+    _currentUser = User();
     _deviceId = _userId = null;
     _initializeApp();
   }
 
   void _initializeApp() async {
-    _deviceId = (await DeviceService().getId())!;
-    _userId = (await ApiService().getUserId(_deviceId!));
+    _currentUser.deviceId = (await DeviceService().getId());
+    _currentUser.id = (await ApiService().connect(_currentUser));
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+    SignalRService().connect();
   }
 
   @override
@@ -46,7 +51,7 @@ class _HomeState extends State<Home> {
           )
         ]
       ),
-      body: _userId == null || _userId!.isEmpty
+      body: _currentUser.id == null || _currentUser.id!.isEmpty
         ? const Center(
           child: CircularProgressIndicator(),
           )
