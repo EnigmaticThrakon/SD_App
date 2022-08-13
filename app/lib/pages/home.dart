@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
+import '../models/settings.dart';
 import '../models/user.dart';
-import '../services/signalr_service.dart';
+// import '../services/signalr_service.dart';
 import 'add_unit.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomeState createState() => _HomeState();
 }
 
@@ -18,6 +20,7 @@ class _HomeState extends State<Home> {
   late String? _deviceId;
   late String? _userId;
   late User _currentUser;
+  late UserSettings? _currentSettings;
   //late List<Unit> _units = null;
 
   @override
@@ -26,14 +29,16 @@ class _HomeState extends State<Home> {
 
     _currentUser = User();
     _deviceId = _userId = null;
+    _currentSettings = UserSettings();
     _initializeApp();
   }
 
   void _initializeApp() async {
     _currentUser.deviceId = (await DeviceService().getId());
     _currentUser.id = (await ApiService().connect(_currentUser));
+    _currentSettings = (await ApiService().getSettings(_currentUser.id!));
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
-    SignalRService().connect();
+    // SignalRService().connect();
   }
 
   @override
@@ -46,7 +51,7 @@ class _HomeState extends State<Home> {
             icon: const Icon(Icons.settings),
             tooltip: 'User Settings',
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const Settings()));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => Settings(settings: _currentSettings!)));
             }
           )
         ]
