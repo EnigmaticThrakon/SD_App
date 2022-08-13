@@ -1,17 +1,17 @@
-class Settings {
+class UserSettings {
   String? id;
   String? groupId;
   bool? groupsEnabled;
   String? userName;
 
-  Settings({
+  UserSettings({
     this.groupId,
     this.groupsEnabled,
     this.id,
     this.userName
   });
   
-  factory Settings.fromJson(Map<String, dynamic> json) => Settings(
+  factory UserSettings.fromJson(Map<String, dynamic> json) => UserSettings(
     groupId: json["groupId"],
     id: json["id"],
     groupsEnabled: json["groupsEnabled"],
