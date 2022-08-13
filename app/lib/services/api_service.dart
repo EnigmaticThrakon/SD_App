@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 
+import '../models/settings.dart';
 import '../models/user.dart';
 
 class ApiService {
@@ -25,8 +26,9 @@ class ApiService {
 
   Future<String?> connect(User user) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Users/Connect');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json"}, body: jsonEncode(user));
+      var url = Uri.parse('$baseUrl/api/Users/${user.deviceId}');
+      // var response = await http.put(url, headers: { "Content-Type" : "application/json"}, body: jsonEncode(user));
+      var response = await http.put(url, headers: { "Content-Type" : "application/json", "accept": "text/plain"}, body: "${user.deviceId}");
       // var response = await http.put(url);
       if(response.statusCode == 200) {
         return response.body;
@@ -36,5 +38,19 @@ class ApiService {
     }
 
     return null;
+  }
+
+  Future<UserSettings?> getSettings(String userId) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Settings/$userId');
+      var response = await http.put(url);
+
+      if(response.statusCode == 200) {
+        UserSettings temp = UserSettings.fromJson(jsonDecode(response.body));
+        return temp;
+      }
+    } catch(e) {
+      log(e.toString());
+    }
   }
 }
