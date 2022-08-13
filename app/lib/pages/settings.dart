@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/settings.dart';
+
 class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  const Settings({Key? key, required this.settings}) : super(key: key);
+
+  final UserSettings settings;
 
   @override
   // ignore: library_private_types_in_public_api
-  _SettingsState createState() => _SettingsState();
+  _SettingsState createState() => _SettingsState(this.settings);
 }
 
 class _SettingsState extends State<Settings> {
+  _SettingsState(this.userSettings);
+
+  final UserSettings userSettings;
   bool _enabled = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _groupIdController = TextEditingController();
@@ -18,7 +25,10 @@ class _SettingsState extends State<Settings> {
   void initState() {
     super.initState();
 
-    _enabled = false;
+    _enabled = userSettings.groupsEnabled!;
+    _usernameController.text = userSettings.userName!;
+    _groupIdController.text = userSettings.groupId!;
+
     _initializeApp();
   }
 
