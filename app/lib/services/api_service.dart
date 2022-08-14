@@ -53,4 +53,17 @@ class ApiService {
       log(e.toString());
     }
   }
+
+  Future<bool?> saveSettings(UserSettings settings) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Settings/Save');
+      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(settings.toJson()));
+
+      if(response.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
 }
