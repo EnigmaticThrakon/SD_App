@@ -1,3 +1,4 @@
+import 'package:app/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,6 +21,7 @@ class _SettingsState extends State<Settings> {
   bool _enabled = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _groupIdController = TextEditingController();
+  bool saveLoading = false;
 
   @override
   void initState() {
@@ -240,7 +242,13 @@ class _SettingsState extends State<Settings> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async { 
+          saveLoading = true;
+          userSettings.userName = _usernameController.text;
+          userSettings.groupId = _groupIdController.text;
+          userSettings.groupsEnabled = _enabled;
+          saveLoading = (await ApiService().saveSettings(userSettings))!; 
+          },
         tooltip: 'Save Settings',
         child: const Icon(Icons.save),
       ),
