@@ -21,6 +21,7 @@ class _HomeState extends State<Home> {
   late String? _userId;
   late User _currentUser;
   late UserSettings? _currentSettings;
+  Color iconColor = Colors.black;
   //late List<Unit> _units = null;
 
   @override
@@ -35,69 +36,111 @@ class _HomeState extends State<Home> {
 
   void _initializeApp() async {
     _currentUser.deviceId = (await DeviceService().getId());
-    _currentUser.id = (await ApiService().connect(_currentUser));
-    _currentSettings = (await ApiService().getSettings(_currentUser.id!));
+    String? tempUserId = (await ApiService().connect(_currentUser));
+
+    if (tempUserId != null) {
+      _currentUser.id = tempUserId;
+      _currentSettings = (await ApiService().getSettings(_currentUser.id!));
+    }
+
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
     // SignalRService().connect();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold (
-      appBar: AppBar (
-        title: const Text('API Test'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'User Settings',
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => Settings(settings: _currentSettings!)));
-            }
-          )
-        ]
-      ),
+    return Scaffold(
+      appBar: AppBar(
+          title: const Text('API Test'),
+          actions: _currentUser.id == null || _currentUser.id!.isEmpty
+              ? <Widget>[Container()]
+              : <Widget>[
+                  IconButton(
+                      icon: const Icon(Icons.settings),
+                      tooltip: 'User Settings',
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                Settings(settings: _currentSettings!)));
+                      })
+                ]),
       body: _currentUser.id == null || _currentUser.id!.isEmpty
-        ? const Center(
-          child: CircularProgressIndicator(),
-          )
-        : ListView.builder(
-          itemCount: 1,
-          itemBuilder: (context, index) {
-            return Card(
-              child: Column (
-                children: [
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  Row (
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text('User ID: $_userId'),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  Row (
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text('Device ID: $_deviceId'),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20.0,
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemCount: 1,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () => {
+                    setState(()
+                    {
+                      iconColor = Colors.purple;
+                    })
+                  },
+                  child: Card (
+                    child:Row(
+                  
+                  children: [
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      ImageIcon(
+                        AssetImage('assets/meat-ager.png'),
+                        size: 50,
+                      )
+                    ]),
+                Column(children: const [Text("Ager Device")]),
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [Icon(Icons.circle, color: iconColor)])
+                
+                ])
                   )
-                ],
-              )
-            );
-          }
-        ),
+                );
+                
+                 
+
+                // Column (
+                //   children: [
+                //     const SizedBox(
+                //       height: 20.0,
+                //     ),
+                //     Row (
+                //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //       children: const [
+                //         ImageIcon(
+                //           AssetImage('assets/meat-ager.png'),
+                //           size: 50,
+                //         )
+                //       ],
+                //     ),
+                //     const SizedBox(
+                //       height: 20.0,
+                //     ),
+                //     Row (
+                //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //       children: [
+                //         Text('Device ID: $_deviceId'),
+                //       ],
+                //     ),
+                //     const SizedBox(
+                //       height: 20.0,
+                //     )
+                //   ],
+                // )
+              }),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed:(){Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddUnit()));},
-        tooltip: 'Add Unit',
-        child: const Icon(Icons.add),
-        ),
+      floatingActionButton: _currentUser.id == null || _currentUser.id!.isEmpty
+          ? Container()
+          : FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const AddUnit()));
+              },
+              tooltip: 'Add Unit',
+              child: const Icon(Icons.add),
+            ),
     );
   }
 }
