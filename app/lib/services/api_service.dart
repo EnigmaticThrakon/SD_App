@@ -7,7 +7,7 @@ import '../models/settings.dart';
 import '../models/user.dart';
 
 class ApiService {
-  static String baseUrl = 'paranoidandroid.network:52042';
+  static String baseUrl = 'http://paranoidandroid.network:52042';
 
   Future<String> getTest() async {
     try {
