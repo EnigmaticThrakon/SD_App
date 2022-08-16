@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:app/models/unit.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/group.dart';
 import '../models/settings.dart';
 import '../models/user.dart';
 
@@ -69,5 +71,26 @@ class ApiService {
     }
 
     return false;
+  }
+
+  Future<List<Unit>> getAvailableUnits(Group group) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Unit/Auto');
+      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(group.toJson()));
+
+      if(response.statusCode == 200) {
+        List<Unit> units = <Unit>[];
+
+        for (Map map in jsonDecode(response.body)) {
+          units.add(Unit.fromJson(map as Map<String, dynamic>));
+        }
+
+        return units;
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return <Unit>[];
   }
 }
