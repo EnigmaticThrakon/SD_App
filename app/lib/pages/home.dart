@@ -1,4 +1,5 @@
 import 'package:app/pages/settings.dart';
+import 'package:app/pages/unit_detailed.dart';
 import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
@@ -17,8 +18,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late String? _deviceId;
-  late String? _userId;
   late User _currentUser;
   late UserSettings? _currentSettings;
   Color iconColor = Colors.black;
@@ -29,7 +28,6 @@ class _HomeState extends State<Home> {
     super.initState();
 
     _currentUser = User();
-    _deviceId = _userId = null;
     _currentSettings = UserSettings();
     _initializeApp();
   }
@@ -52,6 +50,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('API Test'),
+          backgroundColor: Colors.black,
           actions: _currentUser.id == null || _currentUser.id!.isEmpty
               ? <Widget>[Container()]
               : <Widget>[
@@ -72,34 +71,38 @@ class _HomeState extends State<Home> {
               itemCount: 1,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () => {
-                    setState(()
-                    {
-                      iconColor = Colors.purple;
-                    })
-                  },
-                  child: Card (
-                    child:Row(
-                  
-                  children: [
-                Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      ImageIcon(
-                        AssetImage('assets/meat-ager.png'),
-                        size: 50,
-                      )
-                    ]),
-                Column(children: const [Text("Ager Device")]),
-                Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [Icon(Icons.circle, color: iconColor)])
-                
-                ])
-                  )
-                );
-                
-                 
+                    onTap: () => {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  UnitDetailed(selectedColor: iconColor)))
+                        },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.redAccent.withOpacity(0.5), width: 2.0),
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        
+                      ),
+                      margin: const EdgeInsets.all(10.0),
+                        child: Row(
+                          children: [
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: ImageIcon(
+                                AssetImage('assets/meat-ager.png'),
+                                size: 75,
+                              ),
+                            )
+                          ]),
+                      Column(
+                        children: const [
+                        Text(
+                          "Ager Device",
+                          style: TextStyle(fontSize: 25))
+                        ]),
+                    ])));
 
                 // Column (
                 //   children: [
@@ -140,6 +143,7 @@ class _HomeState extends State<Home> {
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
+              backgroundColor: Colors.black,
             ),
     );
   }
