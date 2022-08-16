@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 class UnitDetailed extends StatefulWidget {
   const UnitDetailed({Key? key, required this.selectedColor}) : super(key: key);
@@ -73,25 +72,6 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 )
               ],
             ),
-            Row (
-              children: [
-                MaterialColorPicker(
-                  allowShades: false,
-                  onColorChange: (Color color) {
-                  },
-                  selectedColor: selectedColor,
-                  colors: const [
-                    Colors.red,
-                    Colors.deepOrange,
-                    Colors.deepPurple,
-                    Colors.yellow,
-                    Colors.blue,
-                    Colors.brown,
-                    Colors.green
-                  ]
-                )
-              ]
-            )
         ]
       )
 
