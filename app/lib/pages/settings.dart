@@ -10,8 +10,8 @@ class Settings extends StatefulWidget {
   final UserSettings settings;
 
   @override
-  // ignore: library_private_types_in_public_api
-  _SettingsState createState() => _SettingsState(this.settings);
+  // ignore: library_private_types_in_public_api, no_logic_in_create_state
+  _SettingsState createState() => _SettingsState(settings);
 }
 
 class _SettingsState extends State<Settings> {
@@ -247,7 +247,7 @@ class _SettingsState extends State<Settings> {
           userSettings.userName = _usernameController.text;
           userSettings.groupId = _groupIdController.text;
           userSettings.groupsEnabled = _enabled;
-          saveLoading = (await ApiService().saveSettings(userSettings))!; 
+          saveLoading = (await ApiService().saveSettings(userSettings)); 
           },
         tooltip: 'Save Settings',
         child: const Icon(Icons.save),
