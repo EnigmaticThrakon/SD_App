@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
+import '../models/group.dart';
 import '../models/settings.dart';
 import '../models/user.dart';
 // import '../services/signalr_service.dart';
@@ -21,6 +22,7 @@ class _HomeState extends State<Home> {
   late User _currentUser;
   late UserSettings? _currentSettings;
   Color iconColor = Colors.black;
+  final ApiService _apiService = ApiService();
   //late List<Unit> _units = null;
 
   @override
@@ -34,14 +36,14 @@ class _HomeState extends State<Home> {
 
   void _initializeApp() async {
     _currentUser.deviceId = (await DeviceService().getId());
-    String? tempUserId = (await ApiService().connect(_currentUser));
+    String? tempUserId = (await _apiService.connect(_currentUser));
 
     if (tempUserId != null) {
       _currentUser.id = tempUserId;
-      _currentSettings = (await ApiService().getSettings(_currentUser.id!));
+      _currentSettings = (await _apiService.getSettings(_currentUser.id!));
     }
 
-    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+    Future.delayed(const Duration(seconds: 5)).then((value) => setState(() {}));
     // SignalRService().connect();
   }
 
@@ -50,7 +52,6 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('API Test'),
-          backgroundColor: Colors.black,
           actions: _currentUser.id == null || _currentUser.id!.isEmpty
               ? <Widget>[Container()]
               : <Widget>[
@@ -76,12 +77,12 @@ class _HomeState extends State<Home> {
                               builder: (context) =>
                                   UnitDetailed(selectedColor: iconColor)))
                         },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.redAccent.withOpacity(0.5), width: 2.0),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    child: Card(
+                      // decoration: BoxDecoration(
+                      //   border: Border.all(color: Colors.black.withOpacity(0.5), width: 1.0),
+                      //   borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                         
-                      ),
+                      // ),
                       margin: const EdgeInsets.all(10.0),
                         child: Row(
                           children: [
@@ -93,6 +94,7 @@ class _HomeState extends State<Home> {
                               child: ImageIcon(
                                 AssetImage('assets/meat-ager.png'),
                                 size: 75,
+                                color: Colors.redAccent,
                               ),
                             )
                           ]),
@@ -139,11 +141,10 @@ class _HomeState extends State<Home> {
           : FloatingActionButton(
               onPressed: () {
                 Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const AddUnit()));
+                    MaterialPageRoute(builder: (context) => AddUnit(apiService: _apiService, group: Group(userId: _currentUser.id, groupId: _currentSettings!.groupId))));
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
-              backgroundColor: Colors.black,
             ),
     );
   }
