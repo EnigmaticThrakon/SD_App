@@ -1,11 +1,16 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:app/pages/settings.dart';
 import 'package:app/pages/unit_detailed.dart';
+import 'package:app/services/signalr_service.dart';
 import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
 import '../models/group.dart';
 import '../models/settings.dart';
+import '../models/unit.dart';
 import '../models/user.dart';
 // import '../services/signalr_service.dart';
 import 'add_unit.dart';
@@ -23,6 +28,8 @@ class _HomeState extends State<Home> {
   late UserSettings? _currentSettings;
   Color iconColor = Colors.black;
   final ApiService _apiService = ApiService();
+  final SignalRService _signalRService = SignalRService();
+  late List<Unit> _userUnits = <Unit>[];
   //late List<Unit> _units = null;
 
   @override
@@ -39,12 +46,28 @@ class _HomeState extends State<Home> {
     String? tempUserId = (await _apiService.connect(_currentUser));
 
     if (tempUserId != null) {
+      setupSubscribers(tempUserId);
       _currentUser.id = tempUserId;
       _currentSettings = (await _apiService.getSettings(_currentUser.id!));
+      _userUnits = (await _apiService.getUserUnits(_currentUser.id!));
     }
 
     Future.delayed(const Duration(seconds: 5)).then((value) => setState(() {}));
-    // SignalRService().connect();
+  }
+
+  void setupSubscribers(String userId) async {
+    _signalRService.connect(userId);
+
+    String unitId;
+    _signalRService.getOnNewUnit().observe((onNewUnit) => {
+          unitId = (onNewUnit.newValue as Unit).id!,
+          if (_userUnits.any((t) => t.id == unitId))
+            {
+              _userUnits.where((t) => t.id == unitId).first.isConnected =
+                  (onNewUnit.newValue as Unit).isConnected!
+            },
+          setState(() => {})
+        });
   }
 
   @override
@@ -69,7 +92,7 @@ class _HomeState extends State<Home> {
               child: CircularProgressIndicator(),
             )
           : ListView.builder(
-              itemCount: 1,
+              itemCount: _userUnits.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                     onTap: () => {
@@ -78,33 +101,38 @@ class _HomeState extends State<Home> {
                                   UnitDetailed(selectedColor: iconColor)))
                         },
                     child: Card(
-                      // decoration: BoxDecoration(
-                      //   border: Border.all(color: Colors.black.withOpacity(0.5), width: 1.0),
-                      //   borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                        
-                      // ),
-                      margin: const EdgeInsets.all(10.0),
-                        child: Row(
-                          children: [
-                      Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: ImageIcon(
-                                AssetImage('assets/meat-ager.png'),
-                                size: 75,
-                                color: Colors.redAccent,
-                              ),
-                            )
+                        // decoration: BoxDecoration(
+                        //   border: Border.all(color: Colors.black.withOpacity(0.5), width: 1.0),
+                        //   borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+
+                        // ),
+                        margin: const EdgeInsets.all(10.0),
+                        child: Row(children: [
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ImageIcon(
+                                    const AssetImage('assets/meat-ager.png'),
+                                    size: 75,
+                                    color: _userUnits[index].isConnected!
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                )
+                              ]),
+                          Column(children: [
+                            SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                child: Text(
+                                    _userUnits[index].publicIP == null
+                                        ? 'Device $index'
+                                        : _userUnits[index].publicIP!,
+                                    style: const TextStyle(fontSize: 25),
+                                    overflow: TextOverflow.ellipsis))
                           ]),
-                      Column(
-                        children: const [
-                        Text(
-                          "Ager Device",
-                          style: TextStyle(fontSize: 25))
-                        ]),
-                    ])));
+                        ])));
 
                 // Column (
                 //   children: [
@@ -140,8 +168,12 @@ class _HomeState extends State<Home> {
           ? Container()
           : FloatingActionButton(
               onPressed: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => AddUnit(apiService: _apiService, group: Group(userId: _currentUser.id, groupId: _currentSettings!.groupId))));
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddUnit(
+                        apiService: _apiService,
+                        group: Group(
+                            userId: _currentUser.id,
+                            groupId: _currentSettings!.groupId))));
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
