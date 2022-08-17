@@ -93,4 +93,25 @@ class ApiService {
 
     return <Unit>[];
   }
+
+  Future<List<Unit>> getUserUnits(String userId) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Unit/$userId');
+      var response = await http.get(url);
+
+      if(response.statusCode == 200) {
+        List<Unit> units = <Unit>[];
+
+        for(Map map in jsonDecode(response.body)) {
+          units.add(Unit.fromJson(map as Map<String, dynamic>));
+        }
+
+        return units;
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return <Unit>[];
+  }
 }
