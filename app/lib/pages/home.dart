@@ -42,12 +42,14 @@ class _HomeState extends State<Home> {
   }
 
   void _initializeApp() async {
-    _currentUser.deviceId = (await DeviceService().getId());
-    String? tempUserId = (await _apiService.connect(_currentUser));
+    String? tempDeviceId = (await DeviceService().getId());
 
-    if (tempUserId != null) {
-      setupSubscribers(tempUserId);
-      _currentUser.id = tempUserId;
+    if(tempDeviceId != null) {
+      await setupSubscribers(tempDeviceId);
+      _currentUser = (await _apiService.connect(tempDeviceId));
+    }
+
+    if (_currentUser != User() && _currentUser.id != null) {
       _currentSettings = (await _apiService.getSettings(_currentUser.id!));
       _userUnits = (await _apiService.getUserUnits(_currentUser.id!));
     }
@@ -55,8 +57,8 @@ class _HomeState extends State<Home> {
     Future.delayed(const Duration(seconds: 5)).then((value) => setState(() {}));
   }
 
-  void setupSubscribers(String userId) async {
-    _signalRService.connect(userId);
+  Future<void> setupSubscribers(String deviceId) async {
+    _signalRService.connect(deviceId);
 
     String unitId;
     _signalRService.getOnNewUnit().observe((onNewUnit) => {
@@ -171,9 +173,11 @@ class _HomeState extends State<Home> {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddUnit(
                         apiService: _apiService,
+                        signalR: _signalRService,
                         group: Group(
                             userId: _currentUser.id,
-                            groupId: _currentSettings!.groupId))));
+                            groupId: _currentSettings!.groupId),
+                        publicIP: _currentUser.publicIP == null ? '' : _currentUser.publicIP!)));
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
