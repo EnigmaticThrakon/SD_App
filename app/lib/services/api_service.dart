@@ -26,20 +26,23 @@ class ApiService {
     }
   }
 
-  Future<String?> connect(User user) async {
+  Future<User> connect(String deviceId) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Users/${user.deviceId}');
+      var url = Uri.parse('$baseUrl/api/Users/$deviceId');
       // var response = await http.put(url, headers: { "Content-Type" : "application/json"}, body: jsonEncode(user));
-      var response = await http.put(url, headers: { "Content-Type" : "application/json", "accept": "text/plain"}, body: "${user.deviceId}");
+      var response = await http.put(url, headers: { "Content-Type" : "application/json", "accept": "text/plain"}, body: deviceId.toString());
       // var response = await http.put(url);
       if(response.statusCode == 200) {
-        return response.body;
+        User returnValue = User.fromJson(jsonDecode(response.body));
+        returnValue.deviceId = deviceId;
+
+        return returnValue;
       }
     } catch (e) {
       log(e.toString());
     }
 
-    return null;
+    return User();
   }
 
   Future<UserSettings?> getSettings(String userId) async {
