@@ -10,9 +10,9 @@ class SignalRService {
   late HubConnection _hubConnection;
   final Observable<Unit> _onNewUnit = Observable<Unit>(Unit());
 
-  Future<void> connect(String userId) async {
+  Future<void> connect(String deviceId) async {
     try {
-      _hubConnection = HubConnectionBuilder().withUrl('$_baseUrl?user=$userId').build();
+      _hubConnection = HubConnectionBuilder().withUrl('$_baseUrl?deviceId=$deviceId').build();
       _hubConnection.start();
 
       _hubConnection.on("newConnection", (value) => {
