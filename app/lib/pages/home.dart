@@ -60,16 +60,26 @@ class _HomeState extends State<Home> {
   Future<void> setupSubscribers(String deviceId) async {
     _signalRService.connect(deviceId);
 
-    String unitId;
+    String newUnitId;
     _signalRService.getOnNewUnit().observe((onNewUnit) => {
-          unitId = (onNewUnit.newValue as Unit).id!,
-          if (_userUnits.any((t) => t.id == unitId))
+          newUnitId = (onNewUnit.newValue as Unit).id!,
+          if (_userUnits.any((t) => t.id == newUnitId))
             {
-              _userUnits.where((t) => t.id == unitId).first.isConnected =
+              _userUnits.where((t) => t.id == newUnitId).first.isConnected =
                   (onNewUnit.newValue as Unit).isConnected!
             },
           setState(() => {})
         });
+
+    String linkedUnitId;
+    _signalRService.getOnLinkedUnit().observe((onLinkedUnit) => {
+          linkedUnitId = (onLinkedUnit.newValue as Unit).id!,
+          if(_currentUser.id == linkedUnitId || (_currentSettings!.groupsEnabled! && _currentSettings!.groupId! == linkedUnitId)) {
+            _userUnits.add(onLinkedUnit.newValue as Unit)
+          },
+
+          setState(() => {})
+    });
   }
 
   @override
