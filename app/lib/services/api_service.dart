@@ -147,4 +147,19 @@ class ApiService {
 
     return false;
   }
+
+    Future<bool> updateUnit(Unit unit) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Unit/Update');
+      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+
+      if(response.statusCode == 200 && response.body == "true") {
+        return true;
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return false;
+  }
 }

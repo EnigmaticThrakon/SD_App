@@ -54,7 +54,7 @@ class _HomeState extends State<Home> {
       _userUnits = (await _apiService.getUserUnits(_currentUser.id!));
     }
 
-    Future.delayed(const Duration(seconds: 5)).then((value) => setState(() {}));
+    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
   Future<void> setupSubscribers(String deviceId) async {
@@ -148,9 +148,9 @@ class _HomeState extends State<Home> {
                             SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.7,
                                 child: Text(
-                                    _userUnits[index].publicIP == null
-                                        ? 'Device $index'
-                                        : _userUnits[index].publicIP!,
+                                    _userUnits[index].name == null
+                                        ? _userUnits[index].id!
+                                        : _userUnits[index].name!,
                                     style: const TextStyle(fontSize: 25),
                                     overflow: TextOverflow.ellipsis))
                           ]),

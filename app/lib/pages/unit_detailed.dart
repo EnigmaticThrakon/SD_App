@@ -33,6 +33,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
   }
 
   void _initializeApp() async {
+    _deviceNameController.text = _unit.name == null ? '' : _unit.name!;
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
@@ -77,11 +78,26 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 ),
               ],
             ),
-                            FloatingActionButton(
-                  child: const Icon(Icons.delete),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: ElevatedButton(
                   onPressed: () async => {
                     await _apiService.unlinkUnit(_unit),
                     Navigator.pop(context)
+                  },
+                  style: ElevatedButton.styleFrom(primary: Colors.red),
+                  child: const Text(
+                    "Delete Unit",
+                    style: TextStyle(fontSize: 20),
+                    )
+            ),
+            ),
+              FloatingActionButton(
+                  child: const Icon(Icons.save),
+                  onPressed: () async => {
+                    _unit.name = _deviceNameController.text,
+                    await _apiService.updateUnit(_unit),
+                    setState(() => {})
                   }
                 )
         ]
