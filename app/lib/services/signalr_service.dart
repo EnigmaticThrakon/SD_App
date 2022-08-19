@@ -11,6 +11,7 @@ class SignalRService {
 
   final Observable<Unit> _onNewUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onLinkedUnit = Observable<Unit>(Unit());
+  final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
 
   Future<void> connect(String deviceId) async {
     try {
@@ -34,6 +35,11 @@ class SignalRService {
         _onLinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
         _onLinkedUnit.reportChanged()
       });
+
+      connection.on("unitUnlinked", (value) => {
+        _onUnlinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
+        _onUnlinkedUnit.reportChanged()
+      });
   }
 
   Observable getOnNewUnit() {
@@ -42,5 +48,9 @@ class SignalRService {
 
   Observable getOnLinkedUnit() {
     return _onLinkedUnit;
+  }
+
+  Observable getOnUnlinkedUnit() {
+    return _onUnlinkedUnit;
   }
 }

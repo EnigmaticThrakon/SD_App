@@ -73,12 +73,22 @@ class _HomeState extends State<Home> {
 
     String linkedUnitId;
     _signalRService.getOnLinkedUnit().observe((onLinkedUnit) => {
-          linkedUnitId = (onLinkedUnit.newValue as Unit).id!,
+          linkedUnitId = (onLinkedUnit.newValue as Unit).pairedId!,
           if(_currentUser.id == linkedUnitId || (_currentSettings!.groupsEnabled! && _currentSettings!.groupId! == linkedUnitId)) {
             _userUnits.add(onLinkedUnit.newValue as Unit)
           },
 
           setState(() => {})
+    });
+
+    String unlinkedUnitId;
+    _signalRService.getOnUnlinkedUnit().observe((onUnlinkedUnit) => {
+      unlinkedUnitId = (onUnlinkedUnit.newValue as Unit).id!,
+      if(_userUnits.any((unit) => unit.id == unlinkedUnitId)) {
+        _userUnits.removeWhere((unit) => unit.id == unlinkedUnitId)
+      },
+
+      setState(() => {})
     });
   }
 
@@ -110,7 +120,7 @@ class _HomeState extends State<Home> {
                     onTap: () => {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) =>
-                                  UnitDetailed(selectedColor: iconColor)))
+                                  UnitDetailed(unit: _userUnits[index], apiService: _apiService,)))
                         },
                     child: Card(
                         // decoration: BoxDecoration(
