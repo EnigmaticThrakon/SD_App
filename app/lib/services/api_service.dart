@@ -121,9 +121,24 @@ class ApiService {
   Future<bool> linkUnit(Unit unit) async {
     try {
       var url = Uri.parse('$baseUrl/api/Unit/Link');
-      var response = await http.post(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
 
-      if(response.statusCode == 200) {
+      if(response.statusCode == 200 && response.body == "true") {
+        return true;
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return false;
+  }
+
+  Future<bool> unlinkUnit(Unit unit) async {
+    try {
+      var url = Uri.parse('$baseUrl/api/Unit/Unlink');
+      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+
+      if(response.statusCode == 200 && response.body == "true") {
         return true;
       }
     } catch (e) {

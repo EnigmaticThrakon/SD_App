@@ -1,18 +1,23 @@
+import 'package:app/services/api_service.dart';
 import 'package:flutter/material.dart';
 
-class UnitDetailed extends StatefulWidget {
-  const UnitDetailed({Key? key, required this.selectedColor}) : super(key: key);
+import '../models/unit.dart';
 
-  final Color selectedColor;
+class UnitDetailed extends StatefulWidget {
+  const UnitDetailed({Key? key, required this.unit, required this.apiService}) : super(key: key);
+
+  final Unit unit;
+  final ApiService apiService;
   @override
   // ignore: library_private_types_in_public_api, no_logic_in_create_state
-  _UnitDetailedState createState() => _UnitDetailedState(selectedColor);
+  _UnitDetailedState createState() => _UnitDetailedState(unit, apiService);
 }
 
 class _UnitDetailedState extends State<UnitDetailed> {
-  _UnitDetailedState(this.selectedColor);
+  _UnitDetailedState(this._unit, this._apiService);
 
-  final Color selectedColor;
+  final Unit _unit;
+  final ApiService _apiService;
   final TextEditingController _deviceNameController = TextEditingController();
 
   @override
@@ -69,9 +74,16 @@ class _UnitDetailedState extends State<UnitDetailed> {
                     enabled: true,
                     controller: _deviceNameController,
                   ),
-                )
+                ),
               ],
             ),
+                            FloatingActionButton(
+                  child: const Icon(Icons.delete),
+                  onPressed: () async => {
+                    await _apiService.unlinkUnit(_unit),
+                    Navigator.pop(context)
+                  }
+                )
         ]
       )
 
