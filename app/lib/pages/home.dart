@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:app/pages/settings.dart';
 import 'package:app/pages/unit_detailed.dart';
 import 'package:app/services/signalr_service.dart';
@@ -90,6 +87,16 @@ class _HomeState extends State<Home> {
 
       setState(() => {})
     });
+
+    String changedUnitId;
+    int changedIndex;
+    _signalRService.getOnUnitChange().observe((onUnitChange) => {
+      changedIndex = _userUnits.indexWhere((unit) => unit.id == (onUnitChange.newValue as Unit).id),
+      _userUnits.removeWhere((unit) => unit.id == (onUnitChange.newValue as Unit).id),
+      _userUnits.insert(changedIndex, (onUnitChange.newValue as Unit)),
+
+      setState(() => {})
+    });
   }
 
   @override
@@ -120,7 +127,7 @@ class _HomeState extends State<Home> {
                     onTap: () => {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) =>
-                                  UnitDetailed(unit: _userUnits[index], apiService: _apiService,)))
+                                  UnitDetailed(unit: _userUnits[index], apiService: _apiService, signalR: _signalRService)))
                         },
                     child: Card(
                         // decoration: BoxDecoration(
