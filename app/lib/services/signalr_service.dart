@@ -12,6 +12,7 @@ class SignalRService {
   final Observable<Unit> _onNewUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onLinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
+  final Observable<Unit> _onUnitChange = Observable<Unit>(Unit());
 
   Future<void> connect(String deviceId) async {
     try {
@@ -52,5 +53,14 @@ class SignalRService {
 
   Observable getOnUnlinkedUnit() {
     return _onUnlinkedUnit;
+  }
+
+  Observable getOnUnitChange() {
+    return _onUnitChange;
+  }
+
+  void notifyUnitChange(Unit unit) {
+    _onUnitChange.value = unit;
+    _onUnitChange.reportChanged();
   }
 }
