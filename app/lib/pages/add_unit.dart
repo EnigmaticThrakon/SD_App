@@ -19,8 +19,9 @@ class AddUnit extends StatefulWidget {
   final String publicIP;
 
   @override
-  // ignore: library_private_types_in_public_api, no_logic_in_create_state
+  // ignore: library_private_types_in_public_api
   _AddUnitState createState() =>
+      // ignore: no_logic_in_create_state
       _AddUnitState(apiService, signalR, group, publicIP);
 }
 
@@ -53,12 +54,17 @@ class _AddUnitState extends State<AddUnit> {
     Unit tempUnit;
     _signalRService.getOnNewUnit().observe((onNewUnit) => {
           tempUnit = (onNewUnit.newValue as Unit),
-          if (tempUnit.isConnected! &&
-              tempUnit.publicIP != null &&
+          if (tempUnit.publicIP != null &&
               tempUnit.publicIP! == _publicIP &&
               (tempUnit.pairedId == null ||
                   tempUnit.pairedId == "00000000-0000-0000-0000-000000000000"))
-            {_availableUnits.add(tempUnit)},
+            {
+              if(tempUnit.isConnected == true) {
+                _availableUnits.add(tempUnit)
+              } else {
+                _availableUnits.removeWhere((unit) => unit.id == tempUnit.id)
+              }
+            },
           setState(() => {})
         });
   }
