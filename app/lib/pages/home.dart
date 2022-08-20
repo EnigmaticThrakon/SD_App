@@ -102,7 +102,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('API Test'),
+          title: const Text('Meat Ager Monitor'),
           actions: _currentUser.id == null || _currentUser.id!.isEmpty
               ? <Widget>[Container()]
               : <Widget>[
