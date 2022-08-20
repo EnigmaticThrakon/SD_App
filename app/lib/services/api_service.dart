@@ -7,31 +7,17 @@ import 'package:http/http.dart' as http;
 import '../models/group.dart';
 import '../models/settings.dart';
 import '../models/user.dart';
+import '../consts/network.dart';
 
 class ApiService {
-  static String baseUrl = 'http://paranoidandroid.network:52042';
-
-  Future<String> getTest() async {
-    try {
-      var url = Uri.parse('$baseUrl/test');
-      var response = await http.get(url);
-      if(response.statusCode == 200) {
-        return "succes";
-      } else {
-        return "something weird happened";
-      }
-    } catch (e) {
-      log(e.toString());
-      return e.toString();
-    }
-  }
+  final String _baseUrl = '${NetworkConsts.serverUrl}:${NetworkConsts.serverPort}/${NetworkConsts.apiBasePath}';
+  final Map<String, String> _headers = { "Content-Type" : "application/json", "accept": "text/plain"};
 
   Future<User> connect(String deviceId) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Users/$deviceId');
-      // var response = await http.put(url, headers: { "Content-Type" : "application/json"}, body: jsonEncode(user));
-      var response = await http.put(url, headers: { "Content-Type" : "application/json", "accept": "text/plain"}, body: deviceId.toString());
-      // var response = await http.put(url);
+      var url = Uri.parse('$_baseUrl${UserApiConsts.connect}$deviceId');
+      var response = await http.put(url, headers: _headers, body: deviceId.toString());
+
       if(response.statusCode == 200) {
         User returnValue = User.fromJson(jsonDecode(response.body));
         returnValue.deviceId = deviceId;
@@ -47,7 +33,7 @@ class ApiService {
 
   Future<UserSettings?> getSettings(String userId) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Settings/$userId');
+      var url = Uri.parse('$_baseUrl${UserApiConsts.getSettings}$userId');
       var response = await http.put(url);
 
       if(response.statusCode == 200) {
@@ -63,8 +49,8 @@ class ApiService {
 
   Future<bool> saveSettings(UserSettings settings) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Settings/Save');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(settings.toJson()));
+      var url = Uri.parse('$_baseUrl${UserApiConsts.saveSettings}');
+      var response = await http.put(url, headers: _headers, body: jsonEncode(settings.toJson()));
 
       if(response.statusCode == 200) {
         return true;
@@ -78,8 +64,8 @@ class ApiService {
 
   Future<List<Unit>> getAvailableUnits(Group group) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Unit/Auto');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(group.toJson()));
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.findUnits}');
+      var response = await http.put(url, headers: _headers, body: jsonEncode(group.toJson()));
 
       if(response.statusCode == 200) {
         List<Unit> units = <Unit>[];
@@ -99,7 +85,7 @@ class ApiService {
 
   Future<List<Unit>> getUserUnits(String userId) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Unit/$userId');
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.basePath}$userId');
       var response = await http.get(url);
 
       if(response.statusCode == 200) {
@@ -120,8 +106,8 @@ class ApiService {
 
   Future<bool> linkUnit(Unit unit) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Unit/Link');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.link}');
+      var response = await http.put(url, headers: _headers, body: jsonEncode(unit.toJson()));
 
       if(response.statusCode == 200 && response.body == "true") {
         return true;
@@ -135,8 +121,8 @@ class ApiService {
 
   Future<bool> unlinkUnit(Unit unit) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Unit/Unlink');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.unlink}');
+      var response = await http.put(url, headers: _headers, body: jsonEncode(unit.toJson()));
 
       if(response.statusCode == 200 && response.body == "true") {
         return true;
@@ -150,8 +136,8 @@ class ApiService {
 
     Future<bool> updateUnit(Unit unit) async {
     try {
-      var url = Uri.parse('$baseUrl/api/Unit/Update');
-      var response = await http.put(url, headers: { "Content-Type" : "application/json" }, body: jsonEncode(unit.toJson()));
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.update}');
+      var response = await http.put(url, headers: _headers, body: jsonEncode(unit.toJson()));
 
       if(response.statusCode == 200 && response.body == "true") {
         return true;

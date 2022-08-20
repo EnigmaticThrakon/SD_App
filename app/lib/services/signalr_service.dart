@@ -4,9 +4,10 @@ import 'package:signalr_client/signalr_client.dart';
 import 'package:mobx/mobx.dart';
 
 import '../models/unit.dart';
+import '../consts/network.dart';
 
 class SignalRService {
-  final String _baseUrl = 'http://paranoidandroid.network:52042/appMonitorHub';
+  final String _baseUrl = '${NetworkConsts.serverUrl}:${NetworkConsts.serverPort}/${NetworkConsts.signalRBasePath}';
   late HubConnection _hubConnection;
 
   final Observable<Unit> _onNewUnit = Observable<Unit>(Unit());
