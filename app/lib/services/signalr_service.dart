@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:developer';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:signalr_client/signalr_client.dart';
 import 'package:mobx/mobx.dart';
 

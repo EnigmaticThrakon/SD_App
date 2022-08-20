@@ -88,7 +88,6 @@ class _HomeState extends State<Home> {
       setState(() => {})
     });
 
-    String changedUnitId;
     int changedIndex;
     _signalRService.getOnUnitChange().observe((onUnitChange) => {
       changedIndex = _userUnits.indexWhere((unit) => unit.id == (onUnitChange.newValue as Unit).id),

@@ -16,8 +16,9 @@ class UnitDetailed extends StatefulWidget {
   final ApiService apiService;
   final SignalRService signalR;
   @override
-  // ignore: library_private_types_in_public_api, no_logic_in_create_state
+  // ignore: library_private_types_in_public_api
   _UnitDetailedState createState() =>
+      //ignore: no_logic_in_create_state
       _UnitDetailedState(unit, apiService, signalR);
 }
 
