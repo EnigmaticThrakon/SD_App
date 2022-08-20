@@ -21,6 +21,11 @@ class SignalRService {
 
       setupListeners(_hubConnection);
 
+      _hubConnection.onclose((err) => {
+        log(err.toString()),
+        _hubConnection.start()
+      });
+
     } catch (e) {
       log(e.toString());
     }
