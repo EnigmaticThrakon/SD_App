@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
-import '../models/group.dart';
 import '../models/settings.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
@@ -199,11 +198,7 @@ class _HomeState extends State<Home> {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddUnit(
                         apiService: _apiService,
-                        signalR: _signalRService,
-                        group: Group(
-                            userId: _currentUser.id,
-                            groupId: _currentSettings!.groupId),
-                        publicIP: _currentUser.publicIP == null ? '' : _currentUser.publicIP!)));
+                        userId: _currentUser.id!)));
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
