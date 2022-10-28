@@ -82,7 +82,14 @@ class _AddUnitState extends State<AddUnit> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Navigator.pop(context);
+          int response = await _apiService.addUnitToUser(_serialNumberController.text, _userId);
+
+          if(response != 0) {
+            //Need to do something here to notify user
+          } else {
+            // ignore: use_build_context_synchronously
+            Navigator.pop(context);
+          }
         },
         tooltip: 'Save Selected Units',
         child: const Icon(Icons.save),
