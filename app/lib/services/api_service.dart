@@ -104,19 +104,27 @@ class ApiService {
     return <Unit>[];
   }
 
-  Future<bool> linkUnit(Unit unit) async {
+  Future<int> addUnitToUser(String serialNumber, String userId) async {
     try {
-      var url = Uri.parse('$_baseUrl${UnitApiConsts.link}');
-      var response = await http.put(url, headers: _headers, body: jsonEncode(unit.toJson()));
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.addUnit}/$serialNumber/$userId');
+      var response = await http.post(url, headers: _headers, body: "{}");
 
-      if(response.statusCode == 200 && response.body == "true") {
-        return true;
+      if(response.statusCode == 200) {
+        return 0;
+      } else {
+        if(response.statusCode == 404) {
+          return 1;
+        }
+
+        if(response.statusCode == 400) {
+          return 2;
+        }
       }
     } catch (e) {
       log(e.toString());
     }
 
-    return false;
+    return 3;
   }
 
   Future<bool> unlinkUnit(Unit unit) async {
