@@ -1,40 +1,26 @@
-import 'package:app/models/group.dart';
-import 'package:app/models/unit.dart';
 import 'package:app/services/api_service.dart';
-import 'package:app/services/signalr_service.dart';
 import 'package:flutter/material.dart';
 
 class AddUnit extends StatefulWidget {
-  const AddUnit(
-      {Key? key,
-      required this.apiService,
-      required this.signalR,
-      required this.group,
-      required this.publicIP})
+  const AddUnit({Key? key, required this.apiService, required this.userId})
       : super(key: key);
 
   final ApiService apiService;
-  final Group group;
-  final SignalRService signalR;
-  final String publicIP;
+  final String userId;
 
   @override
   // ignore: library_private_types_in_public_api
   _AddUnitState createState() =>
       // ignore: no_logic_in_create_state
-      _AddUnitState(apiService, signalR, group, publicIP);
+      _AddUnitState(apiService, userId);
 }
 
 class _AddUnitState extends State<AddUnit> {
-  _AddUnitState(
-      this._apiService, this._signalRService, this.group, this._publicIP);
+  _AddUnitState(this._apiService, this._userId);
 
+  final String _userId;
   final ApiService _apiService;
-  final SignalRService _signalRService;
-  final String _publicIP;
-
-  Group group;
-  List<Unit> _availableUnits = <Unit>[];
+  final TextEditingController _serialNumberController = TextEditingController();
 
   @override
   void initState() {
@@ -44,87 +30,58 @@ class _AddUnitState extends State<AddUnit> {
   }
 
   void _initializeApp() async {
-    _availableUnits = (await _apiService.getAvailableUnits(group));
-
-    setupSubscribers();
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
-  }
-
-  void setupSubscribers() async {
-    Unit tempUnit;
-    _signalRService.getOnNewUnit().observe((onNewUnit) => {
-          tempUnit = (onNewUnit.newValue as Unit),
-          if (tempUnit.publicIP != null &&
-              tempUnit.publicIP! == _publicIP &&
-              (tempUnit.pairedId == null ||
-                  tempUnit.pairedId == "00000000-0000-0000-0000-000000000000"))
-            {
-              if(tempUnit.isConnected == true) {
-                _availableUnits.add(tempUnit)
-              } else {
-                _availableUnits.removeWhere((unit) => unit.id == tempUnit.id)
-              }
-            },
-          setState(() => {})
-        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Unit'),
+        title: const Text('Add Unit', style: TextStyle(fontFamily: 'Serif')),
       ),
-      body: _availableUnits.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: _availableUnits.length,
-              itemBuilder: (context, index) {
-                return index != 0
-                    ? GestureDetector(
-                        onTap: () => {
-                              _availableUnits[index].selected != null
-                                  ? _availableUnits[index].selected =
-                                      !_availableUnits[index].selected!
-                                  : true,
-                              setState(() => {})
-                            },
-                        child: Card(
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                              Text(_availableUnits[index].id!,
-                                  style: const TextStyle(fontSize: 16)),
-                              Checkbox(
-                                  value: _availableUnits[index].selected != null
-                                      ? _availableUnits[index].selected!
-                                      : false,
-                                  onChanged: (value) => {
-                                        _availableUnits[index].selected = value,
-                                        setState(() => {})
-                                      })
-                            ])))
-                    : const Padding(
-                        padding: EdgeInsets.only(top: 20, bottom: 10),
-                        child: Text(
-                          "Select the Devices to Add",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18),
-                        ));
-              }),
+      body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+              Flexible(
+                child: Text(
+                  "Please Enter the Serial Number of the Device Below",
+                  style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
+                  softWrap: true,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ]),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [SizedBox(height: 45)]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  // height: 80.0,
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintStyle: TextStyle(fontSize: 30),
+                    ),
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: const TextStyle(fontSize: 30, fontFamily: 'Serif'),
+                    maxLines: 1,
+                    maxLength: 16,
+                    keyboardType: TextInputType.text,
+                    enabled: true,
+                    controller: _serialNumberController,
+                  ),
+                )
+              ],
+            ),
+          ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          for (var i = 1; i < _availableUnits.length; i++) {
-            if (_availableUnits[i].selected == true) {
-              _availableUnits[i].pairedId = group.userId;
-              _apiService.linkUnit(_availableUnits[i]);
-            }
-          }
-
           Navigator.pop(context);
         },
         tooltip: 'Save Selected Units',
