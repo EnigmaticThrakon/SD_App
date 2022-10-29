@@ -57,7 +57,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unit Detailed'),
+        title: const Text('Unit Details',
+            style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
       ),
       body: Column(children: <Widget>[
         SizedBox(
@@ -74,14 +75,14 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 decoration: const InputDecoration(
                   // border: OutlineInpuUtBorder(),
                   hintText: 'Device Name',
-                  hintStyle: TextStyle(fontSize: 19),
+                  hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
                 ),
                 // inputFormatters: [
                 //   GuidInputFormatter()
                 // ],
                 textAlign: TextAlign.center,
                 textAlignVertical: TextAlignVertical.center,
-                style: const TextStyle(fontSize: 19),
+                style: const TextStyle(fontSize: 19, fontFamily: 'Serif'),
                 maxLines: 1,
                 maxLength: 100,
                 keyboardType: TextInputType.text,
@@ -94,12 +95,14 @@ class _UnitDetailedState extends State<UnitDetailed> {
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.7,
           child: ElevatedButton(
-              onPressed: () async =>
-                  {await _apiService.unlinkUnit(_unit), Navigator.pop(context)},
-              style: ElevatedButton.styleFrom(primary: Colors.red),
+              onPressed: () async => {
+                    await _apiService.removeUnitFromUser(_unit.id!, ""),
+                    Navigator.pop(context)
+                  },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text(
-                "Delete Unit",
-                style: TextStyle(fontSize: 20),
+                "Unpair Unit",
+                style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
               )),
         ),
       ]),

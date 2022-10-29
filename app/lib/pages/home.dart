@@ -1,4 +1,4 @@
-import 'package:app/pages/settings.dart';
+// import 'package:app/pages/settings.dart';
 import 'package:app/pages/unit_detailed.dart';
 import 'package:app/services/signalr_service.dart';
 import 'package:flutter/material.dart';
