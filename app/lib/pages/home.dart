@@ -40,7 +40,7 @@ class _HomeState extends State<Home> {
   void _initializeApp() async {
     String? tempDeviceId = (await DeviceService().getId());
 
-    if(tempDeviceId != null) {
+    if (tempDeviceId != null) {
       await setupSubscribers(tempDeviceId);
       _currentUser = (await _apiService.connect(tempDeviceId));
     }
@@ -70,50 +70,39 @@ class _HomeState extends State<Home> {
     String linkedUnitId;
     _signalRService.getOnLinkedUnit().observe((onLinkedUnit) => {
           linkedUnitId = (onLinkedUnit.newValue as Unit).pairedId!,
-          if(_currentUser.id == linkedUnitId || (_currentSettings!.groupsEnabled! && _currentSettings!.groupId! == linkedUnitId)) {
-            _userUnits.add(onLinkedUnit.newValue as Unit)
-          },
-
+          if (_currentUser.id == linkedUnitId ||
+              (_currentSettings!.groupsEnabled! &&
+                  _currentSettings!.groupId! == linkedUnitId))
+            {_userUnits.add(onLinkedUnit.newValue as Unit)},
           setState(() => {})
-    });
+        });
 
     String unlinkedUnitId;
     _signalRService.getOnUnlinkedUnit().observe((onUnlinkedUnit) => {
-      unlinkedUnitId = (onUnlinkedUnit.newValue as Unit).id!,
-      if(_userUnits.any((unit) => unit.id == unlinkedUnitId)) {
-        _userUnits.removeWhere((unit) => unit.id == unlinkedUnitId)
-      },
-
-      setState(() => {})
-    });
+          unlinkedUnitId = (onUnlinkedUnit.newValue as Unit).id!,
+          if (_userUnits.any((unit) => unit.id == unlinkedUnitId))
+            {_userUnits.removeWhere((unit) => unit.id == unlinkedUnitId)},
+          setState(() => {})
+        });
 
     int changedIndex;
     _signalRService.getOnUnitChange().observe((onUnitChange) => {
-      changedIndex = _userUnits.indexWhere((unit) => unit.id == (onUnitChange.newValue as Unit).id),
-      _userUnits.removeWhere((unit) => unit.id == (onUnitChange.newValue as Unit).id),
-      _userUnits.insert(changedIndex, (onUnitChange.newValue as Unit)),
-
-      setState(() => {})
-    });
+          changedIndex = _userUnits.indexWhere(
+              (unit) => unit.id == (onUnitChange.newValue as Unit).id),
+          _userUnits.removeWhere(
+              (unit) => unit.id == (onUnitChange.newValue as Unit).id),
+          _userUnits.insert(changedIndex, (onUnitChange.newValue as Unit)),
+          setState(() => {})
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Meat Ager Monitor'),
-          actions: _currentUser.id == null || _currentUser.id!.isEmpty
-              ? <Widget>[Container()]
-              : <Widget>[
-                  IconButton(
-                      icon: const Icon(Icons.settings),
-                      tooltip: 'User Settings',
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                Settings(settings: _currentSettings!)));
-                      })
-                ]),
+        title: const Text('Meat Ager Monitor',
+            style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
+      ),
       body: _currentUser.id == null || _currentUser.id!.isEmpty
           ? const Center(
               child: CircularProgressIndicator(),
@@ -124,15 +113,12 @@ class _HomeState extends State<Home> {
                 return GestureDetector(
                     onTap: () => {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  UnitDetailed(unit: _userUnits[index], apiService: _apiService, signalR: _signalRService)))
+                              builder: (context) => UnitDetailed(
+                                  unit: _userUnits[index],
+                                  apiService: _apiService,
+                                  signalR: _signalRService)))
                         },
                     child: Card(
-                        // decoration: BoxDecoration(
-                        //   border: Border.all(color: Colors.black.withOpacity(0.5), width: 1.0),
-                        //   borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-
-                        // ),
                         margin: const EdgeInsets.all(10.0),
                         child: Row(children: [
                           Column(
@@ -156,39 +142,11 @@ class _HomeState extends State<Home> {
                                     _userUnits[index].name == null
                                         ? _userUnits[index].id!
                                         : _userUnits[index].name!,
-                                    style: const TextStyle(fontSize: 25),
+                                    style: const TextStyle(
+                                        fontSize: 25, fontFamily: 'Serif'),
                                     overflow: TextOverflow.ellipsis))
                           ]),
                         ])));
-
-                // Column (
-                //   children: [
-                //     const SizedBox(
-                //       height: 20.0,
-                //     ),
-                //     Row (
-                //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //       children: const [
-                //         ImageIcon(
-                //           AssetImage('assets/meat-ager.png'),
-                //           size: 50,
-                //         )
-                //       ],
-                //     ),
-                //     const SizedBox(
-                //       height: 20.0,
-                //     ),
-                //     Row (
-                //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //       children: [
-                //         Text('Device ID: $_deviceId'),
-                //       ],
-                //     ),
-                //     const SizedBox(
-                //       height: 20.0,
-                //     )
-                //   ],
-                // )
               }),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _currentUser.id == null || _currentUser.id!.isEmpty
@@ -197,8 +155,7 @@ class _HomeState extends State<Home> {
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddUnit(
-                        apiService: _apiService,
-                        userId: _currentUser.id!)));
+                        apiService: _apiService, userId: _currentUser.id!)));
               },
               tooltip: 'Add Unit',
               child: const Icon(Icons.add),
