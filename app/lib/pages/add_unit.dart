@@ -85,6 +85,25 @@ class _AddUnitState extends State<AddUnit> {
           int response = await _apiService.addUnitToUser(_serialNumberController.text, _userId);
 
           if(response != 0) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text('Error'),
+                content: response == 1?
+                  const Text('Incorrect Data Sent to API'):
+                  const Text('Could Not Find Device, Ensure Device It Has Been Connected'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'Cancel'),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'OK'),
+                    child: const Text('OK')
+                  )
+                ]
+              )
+            );
             //Need to do something here to notify user
           } else {
             // ignore: use_build_context_synchronously
