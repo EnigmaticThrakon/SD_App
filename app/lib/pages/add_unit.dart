@@ -37,7 +37,8 @@ class _AddUnitState extends State<AddUnit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Unit', style: TextStyle(fontFamily: 'Serif')),
+        title: const Text('Add Unit',
+            style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
       ),
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -82,29 +83,39 @@ class _AddUnitState extends State<AddUnit> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          int response = await _apiService.addUnitToUser(_serialNumberController.text, _userId);
+          int response = await _apiService.addUnitToUser(
+              _serialNumberController.text, _userId);
 
-          if(response != 0) {
+          if (response == 1 || response == 2) {
             showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: const Text('Error'),
-                content: response == 1?
-                  const Text('Incorrect Data Sent to API'):
-                  const Text('Could Not Find Device, Ensure Device It Has Been Connected'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, 'Cancel'),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, 'OK'),
-                    child: const Text('OK')
-                  )
-                ]
-              )
-            );
-            //Need to do something here to notify user
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Error Pairing Device',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        content: response == 2
+                            ? const Text('Incorrect Data Sent to API',
+                                style: TextStyle(
+                                    fontFamily: 'Serif', fontSize: 20))
+                            : const Text(
+                                'Could Not Find Device, Ensure Device It Has Been Connected',
+                                style: TextStyle(
+                                    fontFamily: 'Serif', fontSize: 17)),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, 'Cancel'),
+                            child: const Text('Cancel',
+                                style: TextStyle(
+                                    fontFamily: 'Serif', fontSize: 15)),
+                          ),
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, 'Okay'),
+                              child: const Text('Okay',
+                                  style: TextStyle(
+                                      fontFamily: 'Serif', fontSize: 15)))
+                        ]));
           } else {
             // ignore: use_build_context_synchronously
             Navigator.pop(context);
