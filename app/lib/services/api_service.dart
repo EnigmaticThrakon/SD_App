@@ -111,46 +111,6 @@ class ApiService {
     return <Unit>[];
   }
 
-  Future<int> addUnitToUser(String serialNumber, String userId) async {
-    try {
-      var url =
-          Uri.parse('$_baseUrl${UnitApiConsts.addUnit}/$serialNumber/$userId');
-      var response = await http.post(url, headers: _headers, body: "{}");
-
-      if (response.statusCode == 200) {
-        return 0;
-      } else {
-        if (response.statusCode == 404) {
-          return 1;
-        }
-
-        if (response.statusCode == 400) {
-          return 2;
-        }
-      }
-    } catch (e) {
-      log(e.toString());
-    }
-
-    return 3;
-  }
-
-  Future<bool> removeUnitFromUser(String unitId, String userId) async {
-    try {
-      var url =
-          Uri.parse('$_baseUrl${UnitApiConsts.removeUnit}/$unitId/$userId');
-      var response = await http.post(url, headers: _headers, body: "{}");
-
-      if (response.statusCode == 200 && response.body == "true") {
-        return true;
-      }
-    } catch (e) {
-      log(e.toString());
-    }
-
-    return false;
-  }
-
   Future<bool> updateUnit(Unit unit) async {
     try {
       var url = Uri.parse('$_baseUrl${UnitApiConsts.update}');
@@ -166,4 +126,108 @@ class ApiService {
 
     return false;
   }
+
+  /* #region NEEDED_FOR_DEMONSTRATION */
+    Future<int> addUnitToUser(String serialNumber, String userId) async {
+    try {
+      var url =
+          Uri.parse('$_baseUrl${UnitApiConsts.addUnit}/$serialNumber/$userId');
+      var response = await http.post(url, headers: _headers, body: "{}");
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return 3;
+  }
+
+  Future<int> removeUnitFromUser(String unitId, String userId) async {
+    try {
+      var url =
+          Uri.parse('$_baseUrl${UnitApiConsts.removeUnit}/$unitId/$userId');
+      var response = await http.post(url, headers: _headers, body: "{}");
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return 3;
+  }
+
+  Future<int> updateUnitName(String unitId, String unitName) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.updateName}/$unitId/$unitName');
+      var response = await http.patch(url, headers: _headers, body: "{}");
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return 3;
+  }
+
+  Future startAcquisition(String unitId) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.startAcquisition}/$unitId');
+      var response = await http.get(url);
+    } catch(e) {
+      log(e.toString());
+    }
+
+    return;
+  }
+
+  Future stopAcquisitioning(String unitId) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.stopAcquisition}/$unitId');
+      var response = await http.get(url);
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return;
+  }
+  /* #endregion */
 }
