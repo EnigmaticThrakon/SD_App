@@ -17,8 +17,13 @@ class UserApiConsts {
 class UnitApiConsts {
   static String basePath = "Unit/";
 
-  static String removeUnit = "${basePath}Remove";
-  static String addUnit = "${basePath}Add";
+  static String removeUnit = "${basePath}remove";
+  static String addUnit = "${basePath}add";
+  static String updateName = "${basePath}update-name";
+  static String startAcquisition = "${basePath}start-acquisition";
+  static String stopAcquisition = "${basePath}stop-acquisition";
+
+
   static String update = "${basePath}Update";
   static String findUnits = "${basePath}Auto";
   static String connect = "${basePath}UnitData";
