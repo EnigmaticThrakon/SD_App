@@ -14,6 +14,7 @@ class SignalRService {
   final Observable<Unit> _onLinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnitChange = Observable<Unit>(Unit());
+  final Observable<double> _onValueChange = Observable<double>(0);
 
   Future<void> connect(String deviceId) async {
     try {
@@ -47,6 +48,15 @@ class SignalRService {
         _onUnlinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
         _onUnlinkedUnit.reportChanged()
       });
+
+      connection.on("newValue", (value) => {
+        _onValueChange.value = double.parse(value[0].toString()),
+        _onValueChange.reportChanged()
+      });
+  }
+
+  Observable getOnChangeValue() {
+    return _onValueChange;
   }
 
   Observable getOnNewUnit() {
