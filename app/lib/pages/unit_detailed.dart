@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:app/models/monitor_data.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/signalr_service.dart';
 import 'package:flutter/material.dart';
@@ -35,16 +36,13 @@ class _UnitDetailedState extends State<UnitDetailed> {
   final TextEditingController _deviceNameController = TextEditingController();
   ChartLineDataItem currentValue = ChartLineDataItem(
       x: DateTime.now().millisecondsSinceEpoch.toDouble(), value: 0.0);
-  List<ChartLineDataItem> chartValues = <ChartLineDataItem>[
-    ChartLineDataItem(
-        value: 0.0, x: DateTime.now().millisecondsSinceEpoch.toDouble())
-  ];
+  List<ChartLineDataItem> chartValues = <ChartLineDataItem>[];
   List<double> tempValues = <double>[];
   bool isAcquisitioning = false;
   bool settingsChanged = false;
   double maxValue = 0;
   double minValue = 0;
-  
+  bool startListening = true;
 
   List<ChartLayer> layers() {
     return [
@@ -90,17 +88,6 @@ class _UnitDetailedState extends State<UnitDetailed> {
   @override
   void initState() {
     super.initState();
-  //   currentValue = ChartLineDataItem(
-  //     x: DateTime.now().millisecondsSinceEpoch.toDouble(), value: 0.0);
-  //   chartValues = <ChartLineDataItem>[
-  //   ChartLineDataItem(
-  //       value: 0.0, x: DateTime.now().millisecondsSinceEpoch.toDouble())
-  // ];
-  //   tempValues = <double>[];
-  //   isAcquisitioning = false;
-  //   settingsChanged = false;
-  //   maxValue = 0;
-  //   minValue = 0;
 
     _initializeApp();
   }
@@ -108,7 +95,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
   @override
   void dispose() {
     _deviceNameController.dispose();
-    // chartValues.clear();
+
     super.dispose();
   }
 
@@ -119,29 +106,42 @@ class _UnitDetailedState extends State<UnitDetailed> {
   }
 
   void setupSubscribers() {
-    _signalRService.getOnChangeValue().observe((value) => {
-          setState(() => {
-                tempValues.add(value.newValue),
-                currentValue = ChartLineDataItem(
-                    value: value.newValue,
-                    x: DateTime.now().millisecondsSinceEpoch.toDouble()),
-                if (tempValues.length > 5)
-                  {
-                    chartValues.add(ChartLineDataItem(
-                        x: DateTime.now().millisecondsSinceEpoch.toDouble(),
-                        value: tempValues.reduce(
-                                (value, element) => value = value + element) /
-                            tempValues.length)),
-                    tempValues.clear()
-                  },
-                if (chartValues.length > 100) {
-                  chartValues = chartValues.skip(chartValues.length - 100).take(100).toList()
-                },
-                maxValue = chartValues.reduce((current, next) => current.value > next.value? current: next).value,
-                minValue = chartValues.reduce((current, next) => current.value < next.value? current: next).value,
-                log('$maxValue $minValue')
-              })
-        });
+    _signalRService.getOnChangeValue(startListening).observe(
+        (value) => {
+              setState(() => {
+                    if ((value.newValue as MonitorData).timestamp != null &&
+                        (value.newValue as MonitorData).temperature != null)
+                      {
+                        currentValue = ChartLineDataItem(
+                            value: (value.newValue as MonitorData).temperature!,
+                            x: DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toDouble()),
+                        chartValues.add(ChartLineDataItem(
+                            value: (value.newValue as MonitorData).temperature!,
+                            x: (value.newValue as MonitorData)
+                                .timestamp!
+                                .millisecondsSinceEpoch
+                                .toDouble())),
+                        maxValue = chartValues
+                            .reduce((current, next) =>
+                                current.value > next.value ? current : next)
+                            .value,
+                        minValue = chartValues
+                            .reduce((current, next) =>
+                                current.value < next.value ? current : next)
+                            .value,
+                      },
+                    if (chartValues.length > 100)
+                      {
+                        chartValues = chartValues
+                            .skip(chartValues.length - 100)
+                            .take(100)
+                            .toList()
+                      },
+                  })
+            },
+        fireImmediately: true);
   }
 
   @override
@@ -188,109 +188,55 @@ class _UnitDetailedState extends State<UnitDetailed> {
             width: MediaQuery.of(context).size.width * 0.7,
             child: ElevatedButton(
                 onPressed: () async => {
-                      setupSubscribers(),
+                      await _apiService.stopAcquisitioning(_unit.id!),
                       isAcquisitioning = !isAcquisitioning,
-                      if (!isAcquisitioning)
-                        {
-                          await _apiService.stopAcquisitioning(_unit.id!),
-                          setState(() => {})
-                        }
-                      else
-                        {await _apiService.startAcquisition(_unit.id!)},
-                    },
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                        isAcquisitioning ? Colors.red : Colors.green)),
-                child: Text(
-                  isAcquisitioning
-                      ? "Stop Acquisitioning"
-                      : "Start Acquisition",
-                  style: const TextStyle(fontSize: 20, fontFamily: 'Serif'),
-                )),
-          ),
-          Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
-                child: const Text('Temperature: ',
-                style: TextStyle(
-                  fontFamily: 'Serif',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold
-                )),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(currentValue.value.toString(),
-              style: const TextStyle(
-                fontFamily: 'Serif',
-                fontSize: 20,
-                fontWeight: FontWeight.bold
-              ))
-              )
-            ]
-          ),
-          // SizedBox(
-          //     width: MediaQuery.of(context).size.width * 0.7,
-          //     child: Text(currentValue.value.toString())),
-          Container(
-            constraints: BoxConstraints(
-              maxHeight: 200,
-              maxWidth: MediaQuery.of(context).size.width * 0.9,
-            ),
-            // padding: const EdgeInsets.all(24.0),
-            child: chartValues.length > 2 ? Chart(
-              layers: layers(),
-              // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
-              //   bottom: 12.0,
-              // ),
-            ) : const Center(
-              child: CircularProgressIndicator(),
-            )
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: ElevatedButton(
-                onPressed: () async => {
-                      if (!isAcquisitioning)
-                        {
-                          await _apiService.removeUnitFromUser(_unit.id!, ""),
-                          Navigator.pop(context)
-                        }
-                      else
-                        {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                      title: const Text('Error Unpairing Device',
-                                          style: TextStyle(
-                                              fontFamily: 'Serif',
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold)),
-                                      content: const Text(
-                                          'Cannot unpair unit during acquisition, please stop aquisition first',
-                                          style: TextStyle(
-                                              fontFamily: 'Serif',
-                                              fontSize: 15)),
-                                      actions: <Widget>[
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, 'Okay'),
-                                            child: const Text('Okay',
-                                                style: TextStyle(
-                                                    fontFamily: 'Serif',
-                                                    fontSize: 15)))
-                                      ]))
-                        }
+                      setState(() => {})
                     },
                 style: ButtonStyle(
                     backgroundColor:
                         MaterialStateProperty.all<Color>(Colors.red)),
                 child: const Text(
-                  "Unpair Unit",
+                  "Stop Acquisitioning",
                   style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
                 )),
           ),
+          Row(children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
+              child: const Text('Temperature: ',
+                  style: TextStyle(
+                      fontFamily: 'Serif',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
+                child: Text(currentValue.value.toString(),
+                    style: const TextStyle(
+                        fontFamily: 'Serif',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)))
+          ]),
+          // SizedBox(
+          //     width: MediaQuery.of(context).size.width * 0.7,
+          //     child: Text(currentValue.value.toString())),
+          Container(
+              constraints: BoxConstraints(
+                maxHeight: 200,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              // padding: const EdgeInsets.all(24.0),
+              child: chartValues.length > 2
+                  ? Chart(
+                      layers: layers(),
+                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                      //   bottom: 12.0,
+                      // ),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
         ] else ...[
           SizedBox(
             height: 10.0,
@@ -329,23 +275,15 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 onPressed: () async => {
                       setupSubscribers(),
                       isAcquisitioning = !isAcquisitioning,
-                      if (!isAcquisitioning)
-                        {
-                          await _apiService.stopAcquisitioning(_unit.id!),
-                          setState(() => {})
-                        }
-                      else
-                        {await _apiService.startAcquisition(_unit.id!),
-                        },
+                      startListening = false,
+                      await _apiService.startAcquisition(_unit.id!),
                     },
                 style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                        isAcquisitioning ? Colors.red : Colors.green)),
-                child: Text(
-                  isAcquisitioning
-                      ? "Stop Acquisitioning"
-                      : "Start Acquisition",
-                  style: const TextStyle(fontSize: 20, fontFamily: 'Serif'),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.green)),
+                child: const Text(
+                  "Start Acquisition",
+                  style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
                 )),
           ),
           SizedBox(
