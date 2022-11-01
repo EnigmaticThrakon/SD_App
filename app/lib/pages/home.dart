@@ -38,7 +38,7 @@ class _HomeState extends State<Home> {
   }
 
   void _initializeApp() async {
-    String? tempDeviceId = (await DeviceService().getId());
+    String? tempDeviceId = (await DeviceService().getPlatformGenericId());
 
     if (tempDeviceId != null) {
       await setupSubscribers(tempDeviceId);
