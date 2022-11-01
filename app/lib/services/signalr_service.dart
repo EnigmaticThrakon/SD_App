@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:signalr_client/signalr_client.dart';
 import 'package:mobx/mobx.dart';
 
+import '../models/monitor_data.dart';
 import '../models/unit.dart';
 import '../consts/network.dart';
 
@@ -14,7 +16,7 @@ class SignalRService {
   final Observable<Unit> _onLinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnitChange = Observable<Unit>(Unit());
-  final Observable<double> _onValueChange = Observable<double>(0);
+  final Observable<MonitorData> _onMonitorData = Observable<MonitorData>(MonitorData());
 
   Future<void> connect(String deviceId) async {
     try {
@@ -49,14 +51,29 @@ class SignalRService {
         _onUnlinkedUnit.reportChanged()
       });
 
-      connection.on("newValue", (value) => {
-        _onValueChange.value = double.parse(value[0].toString()),
-        _onValueChange.reportChanged()
+      // connection.on("newValue", (value) => {
+      //   for (Map<String, dynamic> mapping in jsonDecode(value[0].toString())) {
+      //     _onMonitorData.value = MonitorData.fromJson(mapping),
+      //     _onMonitorData.reportChanged()
+      //   },
+      // });
+  }
+
+  void listenToMonitorData() {
+    _hubConnection.on("newValue", (value) => {
+        for (Map<String, dynamic> mapping in jsonDecode(value[0].toString())) {
+          _onMonitorData.value = MonitorData.fromJson(mapping),
+          _onMonitorData.reportChanged()
+        },
       });
   }
 
-  Observable getOnChangeValue() {
-    return _onValueChange;
+  Observable getOnChangeValue(bool startListening) {
+    if(startListening) {
+      listenToMonitorData();
+    }
+
+    return _onMonitorData;
   }
 
   Observable getOnNewUnit() {
