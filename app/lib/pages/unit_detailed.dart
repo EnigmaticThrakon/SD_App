@@ -34,37 +34,39 @@ class _UnitDetailedState extends State<UnitDetailed> {
   final ApiService _apiService;
   final SignalRService _signalRService;
   final TextEditingController _deviceNameController = TextEditingController();
-  ChartLineDataItem currentValue = ChartLineDataItem(
-      x: DateTime.now().millisecondsSinceEpoch.toDouble(), value: 0.0);
-  List<ChartLineDataItem> chartValues = <ChartLineDataItem>[];
-  List<double> tempValues = <double>[];
   bool isAcquisitioning = false;
   bool settingsChanged = false;
-  double maxValue = 0;
-  double minValue = 0;
   bool startListening = true;
+  ChartData chartData = ChartData();
+  bool doorOpen = false;
 
-  List<ChartLayer> layers() {
+  List<ChartLayer> airFlowChartLayers() {
+    double yMax = chartData.airFlow
+        .reduce((current, next) => current.value > next.value ? current : next)
+        .value;
+    double yMin = chartData.airFlow
+        .reduce((current, next) => current.value < next.value ? current : next)
+        .value;
     return [
       ChartAxisLayer(
         settings: ChartAxisSettings(
           x: ChartAxisSettingsAxis(
-            frequency: (chartValues.last.x -
-                    (chartValues.first.x == chartValues.last.x
-                        ? chartValues.last.x - 1
-                        : chartValues.first.x)) /
+            frequency: (chartData.airFlow.last.x -
+                    (chartData.airFlow.first.x == chartData.airFlow.last.x
+                        ? chartData.airFlow.last.x - 1
+                        : chartData.airFlow.first.x)) /
                 2,
-            max: chartValues.last.x,
-            min: chartValues.first.x,
+            max: chartData.airFlow.last.x,
+            min: chartData.airFlow.first.x,
             textStyle: const TextStyle(
               color: Colors.black,
               fontSize: 10.0,
             ),
           ),
           y: ChartAxisSettingsAxis(
-            frequency: (maxValue - minValue) / 4,
-            max: maxValue.roundToDouble(),
-            min: minValue.roundToDouble(),
+            frequency: (yMax - yMin) / 4,
+            max: yMax.roundToDouble(),
+            min: yMin.roundToDouble(),
             textStyle: const TextStyle(
               color: Colors.black,
               fontSize: 10.0,
@@ -76,7 +78,102 @@ class _UnitDetailedState extends State<UnitDetailed> {
         labelY: (value) => value.roundToDouble().toString(),
       ),
       ChartLineLayer(
-        items: chartValues,
+        items: chartData.airFlow,
+        settings: const ChartLineSettings(
+          color: Colors.black,
+          thickness: 1.0,
+        ),
+      ),
+    ];
+  }
+
+  List<ChartLayer> tempChartLayers() {
+    double yMax = chartData.temperature
+        .reduce((current, next) => current.value > next.value ? current : next)
+        .value;
+    double yMin = chartData.temperature
+        .reduce((current, next) => current.value < next.value ? current : next)
+        .value;
+    return [
+      ChartAxisLayer(
+        settings: ChartAxisSettings(
+          x: ChartAxisSettingsAxis(
+            frequency: (chartData.temperature.last.x -
+                    (chartData.temperature.first.x ==
+                            chartData.temperature.last.x
+                        ? chartData.temperature.last.x - 1
+                        : chartData.temperature.first.x)) /
+                2,
+            max: chartData.temperature.last.x,
+            min: chartData.temperature.first.x,
+            textStyle: const TextStyle(
+              color: Colors.black,
+              fontSize: 10.0,
+            ),
+          ),
+          y: ChartAxisSettingsAxis(
+            frequency: (yMax - yMin) / 4,
+            max: yMax.roundToDouble(),
+            min: yMin.roundToDouble(),
+            textStyle: const TextStyle(
+              color: Colors.black,
+              fontSize: 10.0,
+            ),
+          ),
+        ),
+        labelX: (value) => DateFormat('h:mm:ss')
+            .format(DateTime.fromMillisecondsSinceEpoch(value.toInt())),
+        labelY: (value) => value.roundToDouble().toString(),
+      ),
+      ChartLineLayer(
+        items: chartData.temperature,
+        settings: const ChartLineSettings(
+          color: Colors.black,
+          thickness: 1.0,
+        ),
+      ),
+    ];
+  }
+
+  List<ChartLayer> humidityChartLayers() {
+    double yMax = chartData.humidity
+        .reduce((current, next) => current.value > next.value ? current : next)
+        .value;
+    double yMin = chartData.humidity
+        .reduce((current, next) => current.value < next.value ? current : next)
+        .value;
+    return [
+      ChartAxisLayer(
+        settings: ChartAxisSettings(
+          x: ChartAxisSettingsAxis(
+            frequency: (chartData.humidity.last.x -
+                    (chartData.humidity.first.x == chartData.humidity.last.x
+                        ? chartData.humidity.last.x - 1
+                        : chartData.humidity.first.x)) /
+                2,
+            max: chartData.humidity.last.x,
+            min: chartData.humidity.first.x,
+            textStyle: const TextStyle(
+              color: Colors.black,
+              fontSize: 10.0,
+            ),
+          ),
+          y: ChartAxisSettingsAxis(
+            frequency: (yMax - yMin) / 4,
+            max: yMax.roundToDouble(),
+            min: yMin.roundToDouble(),
+            textStyle: const TextStyle(
+              color: Colors.black,
+              fontSize: 10.0,
+            ),
+          ),
+        ),
+        labelX: (value) => DateFormat('h:mm:ss')
+            .format(DateTime.fromMillisecondsSinceEpoch(value.toInt())),
+        labelY: (value) => value.roundToDouble().toString(),
+      ),
+      ChartLineLayer(
+        items: chartData.humidity,
         settings: const ChartLineSettings(
           color: Colors.black,
           thickness: 1.0,
@@ -109,34 +206,59 @@ class _UnitDetailedState extends State<UnitDetailed> {
     _signalRService.getOnChangeValue(startListening).observe(
         (value) => {
               setState(() => {
-                    if ((value.newValue as MonitorData).timestamp != null &&
-                        (value.newValue as MonitorData).temperature != null)
+                    if ((value.newValue as MonitorData).chartTimestamp != null)
                       {
-                        currentValue = ChartLineDataItem(
-                            value: (value.newValue as MonitorData).temperature!,
-                            x: DateTime.now()
-                                .millisecondsSinceEpoch
-                                .toDouble()),
-                        chartValues.add(ChartLineDataItem(
-                            value: (value.newValue as MonitorData).temperature!,
-                            x: (value.newValue as MonitorData)
-                                .timestamp!
-                                .millisecondsSinceEpoch
-                                .toDouble())),
-                        maxValue = chartValues
-                            .reduce((current, next) =>
-                                current.value > next.value ? current : next)
-                            .value,
-                        minValue = chartValues
-                            .reduce((current, next) =>
-                                current.value < next.value ? current : next)
-                            .value,
+                        if ((value.newValue as MonitorData).temperature != null)
+                          {
+                            chartData.temperature.add(ChartLineDataItem(
+                                value: (value.newValue as MonitorData)
+                                    .temperature!,
+                                x: (value.newValue as MonitorData)
+                                    .timestamp!
+                                    .millisecondsSinceEpoch
+                                    .toDouble()))
+                          },
+                        if ((value.newValue as MonitorData).humidity != null)
+                          {
+                            chartData.humidity.add(ChartLineDataItem(
+                                value:
+                                    (value.newValue as MonitorData).humidity!,
+                                x: (value.newValue as MonitorData)
+                                    .timestamp!
+                                    .millisecondsSinceEpoch
+                                    .toDouble()))
+                          },
+                        if ((value.newValue as MonitorData).airFlow != null)
+                          {
+                            chartData.airFlow.add(ChartLineDataItem(
+                                value: (value.newValue as MonitorData).airFlow!,
+                                x: (value.newValue as MonitorData)
+                                    .timestamp!
+                                    .millisecondsSinceEpoch
+                                    .toDouble()))
+                          },
                       },
-                    if (chartValues.length > 100)
+                    if ((value.newValue as MonitorData).door != null)
+                      {doorOpen = (value.newValue as MonitorData).door! == 1},
+                    if (chartData.airFlow.length > 50)
                       {
-                        chartValues = chartValues
-                            .skip(chartValues.length - 100)
-                            .take(100)
+                        chartData.airFlow = chartData.airFlow
+                            .skip(chartData.airFlow.length - 50)
+                            .take(50)
+                            .toList()
+                      },
+                    if (chartData.temperature.length > 50)
+                      {
+                        chartData.temperature = chartData.temperature
+                            .skip(chartData.temperature.length - 50)
+                            .take(50)
+                            .toList()
+                      },
+                    if (chartData.humidity.length > 50)
+                      {
+                        chartData.humidity = chartData.humidity
+                            .skip(chartData.humidity.length - 50)
+                            .take(50)
                             .toList()
                       },
                   })
@@ -151,7 +273,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
         title: const Text('Unit Details',
             style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
       ),
-      body: Column(children: <Widget>[
+      body: SingleChildScrollView(
+        child: Column(children: <Widget>[
         if (isAcquisitioning) ...[
           SizedBox(
             height: 10.0,
@@ -212,24 +335,92 @@ class _UnitDetailedState extends State<UnitDetailed> {
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(currentValue.value.toString(),
+                child: Text(chartData.temperature.isNotEmpty ? chartData.temperature.last.value.toString() : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
                         fontWeight: FontWeight.bold)))
           ]),
-          // SizedBox(
-          //     width: MediaQuery.of(context).size.width * 0.7,
-          //     child: Text(currentValue.value.toString())),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
                 maxWidth: MediaQuery.of(context).size.width * 0.9,
               ),
               // padding: const EdgeInsets.all(24.0),
-              child: chartValues.length > 2
+              child: chartData.temperature.length > 2
                   ? Chart(
-                      layers: layers(),
+                      layers: tempChartLayers(),
+                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                      //   bottom: 12.0,
+                      // ),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
+          // SizedBox(
+          //     width: MediaQuery.of(context).size.width * 0.7,
+          //     child: Text(currentValue.value.toString())),
+          Row(children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
+              child: const Text('Airflow: ',
+                  style: TextStyle(
+                      fontFamily: 'Serif',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
+                child: Text(chartData.airFlow.isNotEmpty ? chartData.airFlow.last.value.toString() : '-',
+                    style: const TextStyle(
+                        fontFamily: 'Serif',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)))
+          ]),
+          Container(
+              constraints: BoxConstraints(
+                maxHeight: 200,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              // padding: const EdgeInsets.all(24.0),
+              child: chartData.airFlow.length > 2
+                  ? Chart(
+                      layers: airFlowChartLayers(),
+                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                      //   bottom: 12.0,
+                      // ),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
+          Row(children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
+              child: const Text('Humidity: ',
+                  style: TextStyle(
+                      fontFamily: 'Serif',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
+                child: Text(chartData.humidity.isNotEmpty ? chartData.humidity.last.value.toString() : '-',
+                    style: const TextStyle(
+                        fontFamily: 'Serif',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)))
+          ]),
+          Container(
+              constraints: BoxConstraints(
+                maxHeight: 200,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              // padding: const EdgeInsets.all(24.0),
+              child: chartData.humidity.length > 2
+                  ? Chart(
+                      layers: humidityChartLayers(),
                       // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
                       //   bottom: 12.0,
                       // ),
@@ -338,7 +529,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 )),
           ),
         ]
-      ]),
+      ])),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.save),
