@@ -6,7 +6,7 @@ class MonitorData {
   double? humidity;
   double? airFlow;
   double? weight;
-  int? door;
+  bool? door;
   double? chartTimestamp;
 
   MonitorData({
