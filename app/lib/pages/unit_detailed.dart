@@ -1,5 +1,3 @@
-// import 'dart:developer';
-
 import 'package:app/models/monitor_data.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/signalr_service.dart';
@@ -192,6 +190,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
   @override
   void dispose() {
     _deviceNameController.dispose();
+    startListening = false;
+    setupSubscribers();
 
     super.dispose();
   }
@@ -200,69 +200,70 @@ class _UnitDetailedState extends State<UnitDetailed> {
     _deviceNameController.text = _unit.name == null ? '' : _unit.name!;
     isAcquisitioning = await _apiService.isAcquisitioning(_unit.id!);
 
+    if (isAcquisitioning) {
+      setupSubscribers();
+    }
+
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
   void setupSubscribers() {
     _signalRService.getOnChangeValue(startListening).observe(
         (value) => {
-              setState(() => {
-                    if ((value.newValue as MonitorData).chartTimestamp != null)
-                      {
-                        if ((value.newValue as MonitorData).temperature != null)
-                          {
-                            chartData.temperature.add(ChartLineDataItem(
-                                value: (value.newValue as MonitorData)
-                                    .temperature!,
-                                x: (value.newValue as MonitorData)
-                                    .timestamp!
-                                    .millisecondsSinceEpoch
-                                    .toDouble()))
-                          },
-                        if ((value.newValue as MonitorData).humidity != null)
-                          {
-                            chartData.humidity.add(ChartLineDataItem(
-                                value:
-                                    (value.newValue as MonitorData).humidity!,
-                                x: (value.newValue as MonitorData)
-                                    .timestamp!
-                                    .millisecondsSinceEpoch
-                                    .toDouble()))
-                          },
-                        if ((value.newValue as MonitorData).airFlow != null)
-                          {
-                            chartData.airFlow.add(ChartLineDataItem(
-                                value: (value.newValue as MonitorData).airFlow!,
-                                x: (value.newValue as MonitorData)
-                                    .timestamp!
-                                    .millisecondsSinceEpoch
-                                    .toDouble()))
-                          },
-                      },
-                    if ((value.newValue as MonitorData).door != null)
-                      {doorOpen = (value.newValue as MonitorData).door! == 1},
-                    if (chartData.airFlow.length > 50)
-                      {
-                        chartData.airFlow = chartData.airFlow
-                            .skip(chartData.airFlow.length - 50)
-                            .take(50)
-                            .toList()
-                      },
-                    if (chartData.temperature.length > 50)
-                      {
-                        chartData.temperature = chartData.temperature
-                            .skip(chartData.temperature.length - 50)
-                            .take(50)
-                            .toList()
-                      },
-                    if (chartData.humidity.length > 50)
-                      {
-                        chartData.humidity = chartData.humidity
-                            .skip(chartData.humidity.length - 50)
-                            .take(50)
-                            .toList()
-                      },
-                  })
+              if ((value.newValue as MonitorData).chartTimestamp != null)
+                {
+                  if ((value.newValue as MonitorData).temperature != null)
+                    {
+                      chartData.temperature.add(ChartLineDataItem(
+                          value: (value.newValue as MonitorData).temperature!,
+                          x: (value.newValue as MonitorData)
+                              .timestamp!
+                              .millisecondsSinceEpoch
+                              .toDouble()))
+                    },
+                  if ((value.newValue as MonitorData).humidity != null)
+                    {
+                      chartData.humidity.add(ChartLineDataItem(
+                          value: (value.newValue as MonitorData).humidity!,
+                          x: (value.newValue as MonitorData)
+                              .timestamp!
+                              .millisecondsSinceEpoch
+                              .toDouble()))
+                    },
+                  if ((value.newValue as MonitorData).airFlow != null)
+                    {
+                      chartData.airFlow.add(ChartLineDataItem(
+                          value: (value.newValue as MonitorData).airFlow!,
+                          x: (value.newValue as MonitorData)
+                              .timestamp!
+                              .millisecondsSinceEpoch
+                              .toDouble()))
+                    },
+                },
+              if ((value.newValue as MonitorData).door != null)
+                {doorOpen = (value.newValue as MonitorData).door!},
+              if (chartData.airFlow.length > 50)
+                {
+                  chartData.airFlow = chartData.airFlow
+                      .skip(chartData.airFlow.length - 50)
+                      .take(50)
+                      .toList()
+                },
+              if (chartData.temperature.length > 50)
+                {
+                  chartData.temperature = chartData.temperature
+                      .skip(chartData.temperature.length - 50)
+                      .take(50)
+                      .toList()
+                },
+              if (chartData.humidity.length > 50)
+                {
+                  chartData.humidity = chartData.humidity
+                      .skip(chartData.humidity.length - 50)
+                      .take(50)
+                      .toList()
+                },
+              if (startListening) {setState(() => {})}
             },
         fireImmediately: true);
   }
@@ -271,11 +272,19 @@ class _UnitDetailedState extends State<UnitDetailed> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unit Details',
-            style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
-      ),
+          title: const Text('Unit Details',
+              style:
+                  TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
+          actions: _unit.id == null || _unit.id!.isEmpty
+              ? <Widget>[Container()]
+              : <Widget>[
+                  IconButton(
+                      icon: const Icon(Icons.settings),
+                      tooltip: 'Unit Settings',
+                      onPressed: () => {Navigator.pop(context)})
+                ]),
       body: SingleChildScrollView(
-        child: Column(children: <Widget>[
+          child: Column(children: <Widget>[
         if (isAcquisitioning) ...[
           SizedBox(
             height: 10.0,
@@ -314,6 +323,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 onPressed: () async => {
                       await _apiService.stopAcquisitioning(_unit.id!),
                       isAcquisitioning = !isAcquisitioning,
+                      startListening = false,
+                      setupSubscribers(),
                       setState(() => {})
                     },
                 style: ButtonStyle(
@@ -336,7 +347,10 @@ class _UnitDetailedState extends State<UnitDetailed> {
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(chartData.temperature.isNotEmpty ? chartData.temperature.last.value.toString() : '-',
+                child: Text(
+                    chartData.temperature.isNotEmpty
+                        ? chartData.temperature.last.value.toString()
+                        : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
@@ -373,7 +387,10 @@ class _UnitDetailedState extends State<UnitDetailed> {
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(chartData.airFlow.isNotEmpty ? chartData.airFlow.last.value.toString() : '-',
+                child: Text(
+                    chartData.airFlow.isNotEmpty
+                        ? chartData.airFlow.last.value.toString()
+                        : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
@@ -407,15 +424,15 @@ class _UnitDetailedState extends State<UnitDetailed> {
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(chartData.humidity.isNotEmpty ? chartData.humidity.last.value.toString() : '-',
+                child: Text(
+                    chartData.humidity.isNotEmpty
+                        ? chartData.humidity.last.value.toString()
+                        : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
                         fontWeight: FontWeight.bold))),
-            FloatingActionButton(
-              onPressed: () => {
-                setState(() => {})
-              })
+            FloatingActionButton(onPressed: () => {setState(() => {})})
           ]),
           Container(
               constraints: BoxConstraints(
@@ -469,9 +486,9 @@ class _UnitDetailedState extends State<UnitDetailed> {
             width: MediaQuery.of(context).size.width * 0.7,
             child: ElevatedButton(
                 onPressed: () async => {
+                      startListening = true,
                       setupSubscribers(),
                       isAcquisitioning = !isAcquisitioning,
-                      startListening = false,
                       await _apiService.startAcquisition(_unit.id!),
                     },
                 style: ButtonStyle(
@@ -535,16 +552,16 @@ class _UnitDetailedState extends State<UnitDetailed> {
           ),
         ]
       ])),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.save),
-        onPressed: () async => {
-          _unit.name = _deviceNameController.text,
-          await _apiService.updateUnit(_unit),
-          _signalRService.notifyUnitChange(_unit),
-          setState(() => {})
-        },
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   child: const Icon(Icons.save),
+      //   onPressed: () async => {
+      //     _unit.name = _deviceNameController.text,
+      //     await _apiService.updateUnit(_unit),
+      //     _signalRService.notifyUnitChange(_unit),
+      //     setState(() => {})
+      //   },
+      // ),
     );
   }
 }
