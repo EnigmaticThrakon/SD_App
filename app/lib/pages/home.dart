@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/device_service.dart';
 
-import '../models/settings.dart';
+// import '../models/settings.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
 // import '../services/signalr_service.dart';
@@ -21,7 +21,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late User _currentUser;
-  late UserSettings? _currentSettings;
+  // late UserSettings? _currentSettings;
   Color iconColor = Colors.black;
   final ApiService _apiService = ApiService();
   final SignalRService _signalRService = SignalRService();
@@ -33,7 +33,7 @@ class _HomeState extends State<Home> {
     super.initState();
 
     _currentUser = User();
-    _currentSettings = UserSettings();
+    // _currentSettings = UserSettings();
     _initializeApp();
   }
 
@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
     }
 
     if (_currentUser != User() && _currentUser.id != null) {
-      _currentSettings = (await _apiService.getSettings(_currentUser.id!));
+      // _currentSettings = (await _apiService.getSettings(_currentUser.id!));
       _userUnits = (await _apiService.getUserUnits(_currentUser.id!));
     }
 
@@ -57,31 +57,36 @@ class _HomeState extends State<Home> {
     _signalRService.connect(deviceId);
 
     String newUnitId;
-    _signalRService.getOnNewUnit().observe((onNewUnit) => {
-          newUnitId = (onNewUnit.newValue as Unit).id!,
-          if (_userUnits.any((t) => t.id == newUnitId))
-            {
-              _userUnits.where((t) => t.id == newUnitId).first.isConnected =
-                  (onNewUnit.newValue as Unit).isConnected!
-            },
-          setState(() => {})
-        });
+    // _signalRService.getOnNewUnit().observe((onNewUnit) => {
+    //       newUnitId = (onNewUnit.newValue as Unit).id!,
+    //       if (_userUnits.any((t) => t.id == newUnitId))
+    //         {
+    //           _userUnits.where((t) => t.id == newUnitId).first.isConnected =
+    //               (onNewUnit.newValue as Unit).isConnected!
+    //         },
+    //       setState(() => {})
+    //     });
 
-    String linkedUnitId;
-    _signalRService.getOnLinkedUnit().observe((onLinkedUnit) => {
-          linkedUnitId = (onLinkedUnit.newValue as Unit).pairedId!,
-          if (_currentUser.id == linkedUnitId ||
-              (_currentSettings!.groupsEnabled! &&
-                  _currentSettings!.groupId! == linkedUnitId))
-            {_userUnits.add(onLinkedUnit.newValue as Unit)},
-          setState(() => {})
-        });
+    // String linkedUnitId;
+    // _signalRService.getOnLinkedUnit().observe((onLinkedUnit) => {
+    //       linkedUnitId = (onLinkedUnit.newValue as Unit).pairedId!,
+    //       if (_currentUser.id == linkedUnitId ||
+    //           (_currentSettings!.groupsEnabled! &&
+    //               _currentSettings!.groupId! == linkedUnitId))
+    //         {_userUnits.add(onLinkedUnit.newValue as Unit)},
+    //       setState(() => {})
+    //     });
 
-    String unlinkedUnitId;
-    _signalRService.getOnUnlinkedUnit().observe((onUnlinkedUnit) => {
-          unlinkedUnitId = (onUnlinkedUnit.newValue as Unit).id!,
-          if (_userUnits.any((unit) => unit.id == unlinkedUnitId))
-            {_userUnits.removeWhere((unit) => unit.id == unlinkedUnitId)},
+    String tempUnitId;
+    _signalRService.getOnStatusChanged().observe((unitValue) => {
+          tempUnitId = (unitValue.newValue as Unit).id!,
+          if (_userUnits.any((unit) => unit.id == tempUnitId))
+          {
+            _userUnits.where((t) => t.id == (unitValue.newValue as Unit).id).first.isConnected = (unitValue.newValue as Unit).isConnected!,
+            // _userUnits.removeWhere((unit) => unit.id == tempUnitId)
+          } else {
+            _userUnits.add(unitValue.newValue as Unit),
+          },
           setState(() => {})
         });
 
