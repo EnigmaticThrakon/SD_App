@@ -8,10 +8,6 @@ class NetworkConsts {
 
 class UserApiConsts {
   static String basePath = "Users/";
-
-  static String saveSettings = "${basePath}Save";
-  static String connect = "${basePath}Incoming/";
-  static String getSettings = "${basePath}Settings/";
 }
 
 class UnitApiConsts {
