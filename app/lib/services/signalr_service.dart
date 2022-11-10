@@ -68,9 +68,15 @@ class SignalRService {
       });
   }
 
+  void stopListeningToMonitorData() {
+    _hubConnection.off("newValue");
+  }
+
   Observable getOnChangeValue(bool startListening) {
     if(startListening) {
       listenToMonitorData();
+    } else {
+      stopListeningToMonitorData();
     }
 
     return _onMonitorData;
