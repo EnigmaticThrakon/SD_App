@@ -1,4 +1,4 @@
-import 'dart:developer';
+// import 'dart:developer';
 
 import 'package:app/models/monitor_data.dart';
 import 'package:app/services/api_service.dart';
@@ -198,6 +198,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
 
   void _initializeApp() async {
     _deviceNameController.text = _unit.name == null ? '' : _unit.name!;
+    isAcquisitioning = await _apiService.isAcquisitioning(_unit.id!);
 
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
@@ -410,7 +411,11 @@ class _UnitDetailedState extends State<UnitDetailed> {
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
-                        fontWeight: FontWeight.bold)))
+                        fontWeight: FontWeight.bold))),
+            FloatingActionButton(
+              onPressed: () => {
+                setState(() => {})
+              })
           ]),
           Container(
               constraints: BoxConstraints(
