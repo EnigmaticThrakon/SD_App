@@ -52,22 +52,6 @@ class ApiService {
     return null;
   }
 
-  Future<bool> saveSettings(UserSettings settings) async {
-    try {
-      var url = Uri.parse('$_baseUrl${UserApiConsts.saveSettings}');
-      var response = await http.put(url,
-          headers: _headers, body: jsonEncode(settings.toJson()));
-
-      if (response.statusCode == 200) {
-        return true;
-      }
-    } catch (e) {
-      log(e.toString());
-    }
-
-    return false;
-  }
-
   Future<List<Unit>> getAvailableUnits(Group group) async {
     try {
       var url = Uri.parse('$_baseUrl${UnitApiConsts.findUnits}');
@@ -208,26 +192,71 @@ class ApiService {
     return 3;
   }
 
-  Future startAcquisition(String unitId) async {
+  Future<int> startAcquisition(String unitId) async {
     try {
       var url = Uri.parse('$_baseUrl${UnitApiConsts.startAcquisition}/$unitId');
       var response = await http.get(url);
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+
     } catch(e) {
       log(e.toString());
     }
 
-    return;
+    return 3;
   }
 
-  Future stopAcquisitioning(String unitId) async {
+  Future<int> stopAcquisitioning(String unitId) async {
     try {
       var url = Uri.parse('$_baseUrl${UnitApiConsts.stopAcquisition}/$unitId');
       var response = await http.get(url);
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+
     } catch (e) {
       log(e.toString());
     }
 
-    return;
+    return 3;
+  }
+
+  Future<bool> isAcquisitioning(String unitId) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.isAcquisitioning}/$unitId');
+      var response = await http.get(url);
+
+      return response.body == "true";
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return false;
   }
   /* #endregion */
 }
