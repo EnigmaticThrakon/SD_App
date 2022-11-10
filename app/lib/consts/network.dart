@@ -22,7 +22,7 @@ class UnitApiConsts {
   static String updateName = "${basePath}update-name";
   static String startAcquisition = "${basePath}start-acquisition";
   static String stopAcquisition = "${basePath}stop-acquisition";
-
+  static String isAcquisitioning = "${basePath}is-acquisitioning";
 
   static String update = "${basePath}Update";
   static String findUnits = "${basePath}Auto";
