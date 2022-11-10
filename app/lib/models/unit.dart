@@ -1,32 +1,27 @@
 class Unit {
   String? id;
-  String? publicIP;
-  bool? selected;
   bool? isConnected;
-  String? pairedId;
   String? name;
+  bool? isAcquisitioning;
 
   Unit({
     this.id,
-    this.publicIP,
-    this.selected,
     this.isConnected,
-    this.pairedId,
-    this.name
+    this.name,
+    this.isAcquisitioning
   });
   
   factory Unit.fromJson(Map<String, dynamic> json) => Unit(
     id: json["id"],
-    publicIP: json["publicIP"],
     isConnected: json["isConnected"],
-    pairedId: json["pairedId"],
-    name: json["name"]
+    name: json["name"],
+    isAcquisitioning: json["isAcquisitioning"]
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "publicIP": publicIP,
-    "pairedId": pairedId,
-    "name": name
+    "isConnected": isConnected,
+    "name": name,
+    "isAcquisitioning": isAcquisitioning
   };
 }

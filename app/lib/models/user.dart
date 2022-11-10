@@ -1,23 +1,23 @@
 class User {
   String? deviceId;
   String? id;
-  String? publicIP;
+  String? userName;
 
   User({
     this.id,
     this.deviceId,
-    this.publicIP
+    this.userName
   });
   
   factory User.fromJson(Map<String, dynamic> json) => User(
     deviceId: json["deviceId"],
     id: json["id"],
-    publicIP: json["publicIP"]
+    userName: json["userName"]
   );
 
   Map<String, dynamic> toJson() => {
     "deviceId": deviceId,
     "id": id,
-    "publicIP": publicIP
+    "userName": userName
   };
 }
