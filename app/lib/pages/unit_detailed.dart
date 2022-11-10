@@ -1,4 +1,5 @@
 import 'package:app/models/monitor_data.dart';
+import 'package:app/pages/unit_settings.dart';
 import 'package:app/services/api_service.dart';
 import 'package:app/services/signalr_service.dart';
 import 'package:flutter/material.dart';
@@ -281,7 +282,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   IconButton(
                       icon: const Icon(Icons.settings),
                       tooltip: 'Unit Settings',
-                      onPressed: () => {Navigator.pop(context)})
+                      onPressed: () => {Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitSettings(
+                        apiService: _apiService, unitId: _unit.id!)))})
                 ]),
       body: SingleChildScrollView(
           child: Column(children: <Widget>[
@@ -296,45 +298,47 @@ class _UnitDetailedState extends State<UnitDetailed> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 // height: 80.0,
-                child: TextField(
-                  decoration: const InputDecoration(
-                    // border: OutlineInpuUtBorder(),
-                    hintText: 'Device Name',
-                    hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: Text(_unit.name!,
+                  // decoration: const InputDecoration(
+                  //   // border: OutlineInpuUtBorder(),
+                  //   hintText: 'Device Name',
+                  //   hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
+                  // ),
                   // inputFormatters: [
                   //   GuidInputFormatter()
                   // ],
                   textAlign: TextAlign.center,
-                  textAlignVertical: TextAlignVertical.center,
+                  // textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(fontSize: 19, fontFamily: 'Serif'),
                   maxLines: 1,
-                  maxLength: 100,
-                  keyboardType: TextInputType.text,
-                  enabled: true,
-                  controller: _deviceNameController,
-                ),
+                  // maxLength: 100,
+                  // keyboardType: TextInputType.text,
+                  // enabled: true,
+                  // controller: _deviceNameController,
+                )),
               ),
             ],
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: ElevatedButton(
-                onPressed: () async => {
-                      await _apiService.stopAcquisitioning(_unit.id!),
-                      isAcquisitioning = !isAcquisitioning,
-                      startListening = false,
-                      setupSubscribers(),
-                      setState(() => {})
-                    },
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.red)),
-                child: const Text(
-                  "Stop Acquisitioning",
-                  style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-                )),
-          ),
+          // SizedBox(
+          //   width: MediaQuery.of(context).size.width * 0.7,
+          //   child: ElevatedButton(
+          //       onPressed: () async => {
+          //             await _apiService.stopAcquisitioning(_unit.id!),
+          //             isAcquisitioning = !isAcquisitioning,
+          //             startListening = false,
+          //             setupSubscribers(),
+          //             setState(() => {})
+          //           },
+          //       style: ButtonStyle(
+          //           backgroundColor:
+          //               MaterialStateProperty.all<Color>(Colors.red)),
+          //       child: const Text(
+          //         "Stop Acquisitioning",
+          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
+          //       )),
+          // ),
           Row(children: [
             Padding(
               padding: EdgeInsets.fromLTRB(
@@ -432,7 +436,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
                         fontFamily: 'Serif',
                         fontSize: 20,
                         fontWeight: FontWeight.bold))),
-            FloatingActionButton(onPressed: () => {setState(() => {})})
+            // FloatingActionButton(onPressed: () => {setState(() => {})})
           ]),
           Container(
               constraints: BoxConstraints(
@@ -450,6 +454,9 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   : const Center(
                       child: CircularProgressIndicator(),
                     )),
+          const Padding(
+            padding: EdgeInsets.all(40)
+          )
         ] else ...[
           SizedBox(
             height: 10.0,
@@ -461,107 +468,117 @@ class _UnitDetailedState extends State<UnitDetailed> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 // height: 80.0,
-                child: TextField(
-                  decoration: const InputDecoration(
-                    // border: OutlineInpuUtBorder(),
-                    hintText: 'Device Name',
-                    hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
-                  ),
-                  // inputFormatters: [
-                  //   GuidInputFormatter()
-                  // ],
+                child: Text(_unit.name!,
+                  // decoration: const InputDecoration(
+                  //   // border: OutlineInpuUtBorder(),
+                  //   hintText: 'Device Name',
+                  //   hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
+                  // ),
                   textAlign: TextAlign.center,
-                  textAlignVertical: TextAlignVertical.center,
+                  // textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(fontSize: 19, fontFamily: 'Serif'),
                   maxLines: 1,
-                  maxLength: 100,
-                  keyboardType: TextInputType.text,
-                  enabled: true,
-                  controller: _deviceNameController,
+                  // maxLength: 100,
+                  // keyboardType: TextInputType.text,
+                  // enabled: true,
+                  // controller: _deviceNameController,
                 ),
               ),
             ],
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: ElevatedButton(
-                onPressed: () async => {
-                      startListening = true,
-                      setupSubscribers(),
-                      isAcquisitioning = !isAcquisitioning,
-                      await _apiService.startAcquisition(_unit.id!),
-                    },
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green)),
-                child: const Text(
-                  "Start Acquisition",
-                  style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-                )),
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: ElevatedButton(
-                onPressed: () async => {
-                      if (!isAcquisitioning)
-                        {
-                          await _apiService.removeUnitFromUser(_unit.id!, ""),
-                          Navigator.pop(context)
-                        }
-                      else
-                        {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                      title: const Text('Error Pairing Device',
-                                          style: TextStyle(
-                                              fontFamily: 'Serif',
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold)),
-                                      content: const Text(
-                                          'Cannot unpair unit during acquisition, please stop aquisition first',
-                                          style: TextStyle(
-                                              fontFamily: 'Serif',
-                                              fontSize: 20)),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, 'Cancel'),
-                                          child: const Text('Cancel',
-                                              style: TextStyle(
-                                                  fontFamily: 'Serif',
-                                                  fontSize: 15)),
-                                        ),
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, 'Okay'),
-                                            child: const Text('Okay',
-                                                style: TextStyle(
-                                                    fontFamily: 'Serif',
-                                                    fontSize: 15)))
-                                      ]))
-                        }
-                    },
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.red)),
-                child: const Text(
-                  "Unpair Unit",
-                  style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-                )),
-          ),
+          // SizedBox(
+          //   width: MediaQuery.of(context).size.width * 0.7,
+          //   child: ElevatedButton(
+          //       onPressed: () async => {
+          //             startListening = true,
+          //             setupSubscribers(),
+          //             isAcquisitioning = !isAcquisitioning,
+          //             await _apiService.startAcquisition(_unit.id!),
+          //           },
+          //       style: ButtonStyle(
+          //           backgroundColor:
+          //               MaterialStateProperty.all<Color>(Colors.green)),
+          //       child: const Text(
+          //         "Start Acquisition",
+          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
+          //       )),
+          // ),
+          // SizedBox(
+          //   width: MediaQuery.of(context).size.width * 0.7,
+          //   child: ElevatedButton(
+          //       onPressed: () async => {
+          //             if (!isAcquisitioning)
+          //               {
+          //                 await _apiService.removeUnitFromUser(_unit.id!, ""),
+          //                 Navigator.pop(context)
+          //               }
+          //             else
+          //               {
+          //                 showDialog(
+          //                     context: context,
+          //                     builder: (BuildContext context) => AlertDialog(
+          //                             title: const Text('Error Pairing Device',
+          //                                 style: TextStyle(
+          //                                     fontFamily: 'Serif',
+          //                                     fontSize: 20,
+          //                                     fontWeight: FontWeight.bold)),
+          //                             content: const Text(
+          //                                 'Cannot unpair unit during acquisition, please stop aquisition first',
+          //                                 style: TextStyle(
+          //                                     fontFamily: 'Serif',
+          //                                     fontSize: 20)),
+          //                             actions: <Widget>[
+          //                               TextButton(
+          //                                 onPressed: () =>
+          //                                     Navigator.pop(context, 'Cancel'),
+          //                                 child: const Text('Cancel',
+          //                                     style: TextStyle(
+          //                                         fontFamily: 'Serif',
+          //                                         fontSize: 15)),
+          //                               ),
+          //                               TextButton(
+          //                                   onPressed: () =>
+          //                                       Navigator.pop(context, 'Okay'),
+          //                                   child: const Text('Okay',
+          //                                       style: TextStyle(
+          //                                           fontFamily: 'Serif',
+          //                                           fontSize: 15)))
+          //                             ]))
+          //               }
+          //           },
+          //       style: ButtonStyle(
+          //           backgroundColor:
+          //               MaterialStateProperty.all<Color>(Colors.red)),
+          //       child: const Text(
+          //         "Unpair Unit",
+          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
+          //       )),
+          // ),
         ]
       ])),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // floatingActionButton: FloatingActionButton(
-      //   child: const Icon(Icons.save),
-      //   onPressed: () async => {
-      //     _unit.name = _deviceNameController.text,
-      //     await _apiService.updateUnit(_unit),
-      //     _signalRService.notifyUnitChange(_unit),
-      //     setState(() => {})
-      //   },
-      // ),
+      floatingActionButton: ElevatedButton(
+        onPressed: () async {
+          if(isAcquisitioning) {
+            await _apiService.stopAcquisitioning(_unit.id!);
+            isAcquisitioning = !isAcquisitioning;
+            startListening = false;
+            setupSubscribers();
+          } else {
+            await _apiService.startAcquisition(_unit.id!);
+            isAcquisitioning = !isAcquisitioning;
+            startListening = true;
+            setupSubscribers();
+          }
+
+          setState(() => {});
+        },
+        style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(isAcquisitioning ? Colors.red : Colors.green)),
+        child: Text(isAcquisitioning ? 'Stop Acquisitioning' : 'Start Acquisitioning',
+          style: const TextStyle(fontSize: 20, fontFamily: 'Serif')),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
