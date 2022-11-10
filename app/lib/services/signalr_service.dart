@@ -13,8 +13,8 @@ class SignalRService {
   late HubConnection _hubConnection;
 
   final Observable<Unit> _onNewUnit = Observable<Unit>(Unit());
-  final Observable<Unit> _onLinkedUnit = Observable<Unit>(Unit());
-  final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
+  final Observable<Unit> _onStatusChanged = Observable<Unit>(Unit());
+  // final Observable<Unit> _onUnlinkedUnit = Observable<Unit>(Unit());
   final Observable<Unit> _onUnitChange = Observable<Unit>(Unit());
   final Observable<MonitorData> _onMonitorData = Observable<MonitorData>(MonitorData());
 
@@ -41,15 +41,15 @@ class SignalRService {
         _onNewUnit.reportChanged()
       });
 
-      connection.on("unitLinked", (value) => {
-        _onLinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
-        _onLinkedUnit.reportChanged()
+      connection.on("statusChanged", (value) => {
+        _onStatusChanged.value = Unit.fromJson(value[0] as Map<String, dynamic>),
+        _onStatusChanged.reportChanged()
       });
 
-      connection.on("unitUnlinked", (value) => {
-        _onUnlinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
-        _onUnlinkedUnit.reportChanged()
-      });
+      // connection.on("unitUnlinked", (value) => {
+      //   _onUnlinkedUnit.value = Unit.fromJson(value[0] as Map<String, dynamic>),
+      //   _onUnlinkedUnit.reportChanged()
+      // });
 
       // connection.on("newValue", (value) => {
       //   for (Map<String, dynamic> mapping in jsonDecode(value[0].toString())) {
@@ -80,13 +80,13 @@ class SignalRService {
     return _onNewUnit;
   }
 
-  Observable getOnLinkedUnit() {
-    return _onLinkedUnit;
+  Observable getOnStatusChanged() {
+    return _onStatusChanged;
   }
 
-  Observable getOnUnlinkedUnit() {
-    return _onUnlinkedUnit;
-  }
+  // Observable getOnUnlinkedUnit() {
+  //   return _onUnlinkedUnit;
+  // }
 
   Observable getOnUnitChange() {
     return _onUnitChange;
