@@ -1,4 +1,4 @@
-import 'package:app/services/api_service.dart';
+// import 'package:app/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -96,7 +96,7 @@ class _SettingsState extends State<Settings> {
           userSettings.userName = _usernameController.text;
           userSettings.groupId = _groupIdController.text;
           userSettings.groupsEnabled = _enabled;
-          saveLoading = (await ApiService().saveSettings(userSettings)); 
+          // saveLoading = (await ApiService().saveSettings(userSettings)); 
           },
         tooltip: 'Save Settings',
         child: const Icon(Icons.save),
