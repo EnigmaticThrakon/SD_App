@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:app/models/unit.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/unit_settings.dart';
 import '../models/user.dart';
 import '../consts/network.dart';
 
@@ -201,6 +202,48 @@ class ApiService {
     }
 
     return false;
+  }
+
+  Future<UnitSettings> getUnitSettings(String unitId) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.getConfigurations}/$unitId');
+      var response = await http.get(url);
+
+      if(response.statusCode == 200) {
+        return UnitSettings.fromJson(jsonDecode(response.body));
+      } 
+    } catch(e) {
+      log(e.toString());
+    }
+
+    return UnitSettings();
+  }
+
+  Future<int> saveUnitSettings(UnitSettings settings) async {
+    try {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.updateConfigurations}');
+      var response = await http.post(url, headers: _headers, body:  jsonEncode(settings.toJson()));
+
+      switch(response.statusCode) {
+        case 200: {
+          return 0;
+        }
+        case 404: {
+          return 1;
+        }
+        case 400: {
+          return 2;
+        }
+        default: {
+          return 3;
+        }
+      }
+
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return 3;
   }
   /* #endregion */
 }
