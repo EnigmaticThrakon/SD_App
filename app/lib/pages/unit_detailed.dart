@@ -33,6 +33,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
   final ApiService _apiService;
   final SignalRService _signalRService;
   final TextEditingController _deviceNameController = TextEditingController();
+  var settingsResponse = null;
   bool isAcquisitioning = false;
   bool settingsChanged = false;
   bool startListening = true;
@@ -282,8 +283,15 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   IconButton(
                       icon: const Icon(Icons.settings),
                       tooltip: 'Unit Settings',
-                      onPressed: () => {Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitSettings(
-                        apiService: _apiService, unitId: _unit.id!)))})
+                      onPressed: () async => {
+                        settingsResponse = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitSettingsPage(
+                        apiService: _apiService, unitId: _unit.id!))),
+
+                        if(settingsResponse != null) {
+                          _unit.name = settingsResponse,
+                          setState(() {})
+                        }
+                        })
                 ]),
       body: SingleChildScrollView(
           child: Column(children: <Widget>[
@@ -321,24 +329,24 @@ class _UnitDetailedState extends State<UnitDetailed> {
               ),
             ],
           ),
-          // SizedBox(
-          //   width: MediaQuery.of(context).size.width * 0.7,
-          //   child: ElevatedButton(
-          //       onPressed: () async => {
-          //             await _apiService.stopAcquisitioning(_unit.id!),
-          //             isAcquisitioning = !isAcquisitioning,
-          //             startListening = false,
-          //             setupSubscribers(),
-          //             setState(() => {})
-          //           },
-          //       style: ButtonStyle(
-          //           backgroundColor:
-          //               MaterialStateProperty.all<Color>(Colors.red)),
-          //       child: const Text(
-          //         "Stop Acquisitioning",
-          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-          //       )),
-          // ),
+          Row(children:[
+            Padding(padding: EdgeInsets.fromLTRB(
+              MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
+              child: const Text('Door: ',
+              style: TextStyle(
+                fontFamily: 'Serif',
+                fontSize: 20,
+                fontWeight: FontWeight.bold)
+              )),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
+              child: Text(doorOpen ? 'Open' : 'Closed',
+              style: const TextStyle(
+                fontFamily: 'Serif',
+                fontSize: 20,
+                fontWeight: FontWeight.bold)
+              ))
+          ]),
           Row(children: [
             Padding(
               padding: EdgeInsets.fromLTRB(
