@@ -56,26 +56,13 @@ class _HomeState extends State<Home> {
   Future<void> setupSubscribers(String deviceId) async {
     _signalRService.connect(deviceId);
 
-    String tempUnitId;
     _signalRService.getOnStatusChanged().observe((unitValue) => {
-          tempUnitId = (unitValue.newValue as Unit).id!,
-          if (_userUnits.any((unit) => unit.id == tempUnitId))
+          if (_userUnits.any((unit) => unit.id == (unitValue.newValue as Unit).id!))
           {
-            _userUnits.where((t) => t.id == (unitValue.newValue as Unit).id).first.isConnected = (unitValue.newValue as Unit).isConnected!,
-            // _userUnits.removeWhere((unit) => unit.id == tempUnitId)
+            _userUnits[_userUnits.indexWhere((t) => t.id == (unitValue.newValue as Unit).id!)] = (unitValue.newValue as Unit)
           } else {
             _userUnits.add(unitValue.newValue as Unit),
           },
-          setState(() => {})
-        });
-
-    int changedIndex;
-    _signalRService.getOnUnitChange().observe((onUnitChange) => {
-          changedIndex = _userUnits.indexWhere(
-              (unit) => unit.id == (onUnitChange.newValue as Unit).id),
-          _userUnits.removeWhere(
-              (unit) => unit.id == (onUnitChange.newValue as Unit).id),
-          _userUnits.insert(changedIndex, (onUnitChange.newValue as Unit)),
           setState(() => {})
         });
   }
