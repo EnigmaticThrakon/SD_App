@@ -186,6 +186,10 @@ class _UnitDetailedState extends State<UnitDetailed> {
   void initState() {
     super.initState();
 
+    chartData.temperature.clear();
+    chartData.airFlow.clear();
+    chartData.humidity.clear();
+
     _initializeApp();
   }
 
@@ -193,8 +197,13 @@ class _UnitDetailedState extends State<UnitDetailed> {
   void dispose() {
     _deviceNameController.dispose();
     startListening = false;
+
     setupSubscribers();
 
+    chartData.temperature.clear();
+    chartData.airFlow.clear();
+    chartData.humidity.clear();
+    
     super.dispose();
   }
 
@@ -212,7 +221,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
   void setupSubscribers() {
     _signalRService.getOnChangeValue(startListening).observe(
         (value) => {
-              if ((value.newValue as MonitorData).chartTimestamp != null)
+              if ((value.newValue as MonitorData).chartTimestamp != null && (chartData.temperature.isEmpty || (value.newValue as MonitorData).chartTimestamp! > chartData.temperature.last.x))
                 {
                   if ((value.newValue as MonitorData).temperature != null)
                     {
