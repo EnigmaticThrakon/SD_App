@@ -143,7 +143,7 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width *
-                                              0.2,
+                                              0.3,
                                           child: TextFormField(
                                             decoration: const InputDecoration(
                                                 border: OutlineInputBorder()),
@@ -169,7 +169,7 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width *
-                                              0.2,
+                                              0.3,
                                           child: TextFormField(
                                             decoration: const InputDecoration(
                                                 border: OutlineInputBorder()),
@@ -195,7 +195,7 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width *
-                                              0.2,
+                                              0.3,
                                           child: TextFormField(
                                             decoration: const InputDecoration(
                                                 border: OutlineInputBorder(),
