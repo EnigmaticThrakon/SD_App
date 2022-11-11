@@ -309,65 +309,53 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                   child: Text(_unit.name!,
-                  // decoration: const InputDecoration(
-                  //   // border: OutlineInpuUtBorder(),
-                  //   hintText: 'Device Name',
-                  //   hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
-                  // ),
-                  // inputFormatters: [
-                  //   GuidInputFormatter()
-                  // ],
                   textAlign: TextAlign.center,
-                  // textAlignVertical: TextAlignVertical.center,
-                  style: const TextStyle(fontSize: 19, fontFamily: 'Serif'),
+                  style: const TextStyle(fontSize: 25, fontFamily: 'Serif', fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
                   maxLines: 1,
-                  // maxLength: 100,
-                  // keyboardType: TextInputType.text,
-                  // enabled: true,
-                  // controller: _deviceNameController,
                 )),
               ),
             ],
           ),
-          Row(children:[
-            Padding(padding: EdgeInsets.fromLTRB(
-              MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
-              child: const Text('Door: ',
-              style: TextStyle(
-                fontFamily: 'Serif',
-                fontSize: 20,
-                fontWeight: FontWeight.bold)
-              )),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-              child: Text(doorOpen ? 'Open' : 'Closed',
-              style: const TextStyle(
-                fontFamily: 'Serif',
-                fontSize: 20,
-                fontWeight: FontWeight.bold)
-              ))
-          ]),
-          Row(children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
-              child: const Text('Temperature: ',
+          Padding(
+            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Door: ',
                   style: TextStyle(
                       fontFamily: 'Serif',
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(
+                  Text(doorOpen ? 'Open' : 'Closed',
+                    style: TextStyle(
+                        fontFamily: 'Serif',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: doorOpen ? Colors.red : Colors.black))
+              ],
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Temperature: ',
+                  style: TextStyle(
+                      fontFamily: 'Serif',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+                  Text(
                     chartData.temperature.isNotEmpty
                         ? chartData.temperature.last.value.toString()
                         : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
-                        fontWeight: FontWeight.bold)))
-          ]),
+                        fontWeight: FontWeight.bold))
+              ],
+            )
+          ),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -384,30 +372,27 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   : const Center(
                       child: CircularProgressIndicator(),
                     )),
-          // SizedBox(
-          //     width: MediaQuery.of(context).size.width * 0.7,
-          //     child: Text(currentValue.value.toString())),
-          Row(children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
-              child: const Text('Airflow: ',
+          Padding(
+            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Airflow: ',
                   style: TextStyle(
                       fontFamily: 'Serif',
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(
+                  Text(
                     chartData.airFlow.isNotEmpty
                         ? chartData.airFlow.last.value.toString()
                         : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
-                        fontWeight: FontWeight.bold)))
-          ]),
+                        fontWeight: FontWeight.bold))
+              ],
+            )
+          ),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -424,28 +409,27 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   : const Center(
                       child: CircularProgressIndicator(),
                     )),
-          Row(children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05, 15, 0, 15),
-              child: const Text('Humidity: ',
+          Padding(
+            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Humidity: ',
                   style: TextStyle(
                       fontFamily: 'Serif',
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
-                child: Text(
+                  Text(
                     chartData.humidity.isNotEmpty
                         ? chartData.humidity.last.value.toString()
                         : '-',
                     style: const TextStyle(
                         fontFamily: 'Serif',
                         fontSize: 20,
-                        fontWeight: FontWeight.bold))),
-            // FloatingActionButton(onPressed: () => {setState(() => {})})
-          ]),
+                        fontWeight: FontWeight.bold))
+              ],
+            )
+          ),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -475,93 +459,16 @@ class _UnitDetailedState extends State<UnitDetailed> {
             children: [
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
-                // height: 80.0,
-                child: Text(_unit.name!,
-                  // decoration: const InputDecoration(
-                  //   // border: OutlineInpuUtBorder(),
-                  //   hintText: 'Device Name',
-                  //   hintStyle: TextStyle(fontSize: 19, fontFamily: 'Serif'),
-                  // ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: Text(_unit.name!,
                   textAlign: TextAlign.center,
-                  // textAlignVertical: TextAlignVertical.center,
-                  style: const TextStyle(fontSize: 19, fontFamily: 'Serif'),
+                  style: const TextStyle(fontSize: 25, fontFamily: 'Serif', fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
                   maxLines: 1,
-                  // maxLength: 100,
-                  // keyboardType: TextInputType.text,
-                  // enabled: true,
-                  // controller: _deviceNameController,
-                ),
+                )),
               ),
             ],
           ),
-          // SizedBox(
-          //   width: MediaQuery.of(context).size.width * 0.7,
-          //   child: ElevatedButton(
-          //       onPressed: () async => {
-          //             startListening = true,
-          //             setupSubscribers(),
-          //             isAcquisitioning = !isAcquisitioning,
-          //             await _apiService.startAcquisition(_unit.id!),
-          //           },
-          //       style: ButtonStyle(
-          //           backgroundColor:
-          //               MaterialStateProperty.all<Color>(Colors.green)),
-          //       child: const Text(
-          //         "Start Acquisition",
-          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-          //       )),
-          // ),
-          // SizedBox(
-          //   width: MediaQuery.of(context).size.width * 0.7,
-          //   child: ElevatedButton(
-          //       onPressed: () async => {
-          //             if (!isAcquisitioning)
-          //               {
-          //                 await _apiService.removeUnitFromUser(_unit.id!, ""),
-          //                 Navigator.pop(context)
-          //               }
-          //             else
-          //               {
-          //                 showDialog(
-          //                     context: context,
-          //                     builder: (BuildContext context) => AlertDialog(
-          //                             title: const Text('Error Pairing Device',
-          //                                 style: TextStyle(
-          //                                     fontFamily: 'Serif',
-          //                                     fontSize: 20,
-          //                                     fontWeight: FontWeight.bold)),
-          //                             content: const Text(
-          //                                 'Cannot unpair unit during acquisition, please stop aquisition first',
-          //                                 style: TextStyle(
-          //                                     fontFamily: 'Serif',
-          //                                     fontSize: 20)),
-          //                             actions: <Widget>[
-          //                               TextButton(
-          //                                 onPressed: () =>
-          //                                     Navigator.pop(context, 'Cancel'),
-          //                                 child: const Text('Cancel',
-          //                                     style: TextStyle(
-          //                                         fontFamily: 'Serif',
-          //                                         fontSize: 15)),
-          //                               ),
-          //                               TextButton(
-          //                                   onPressed: () =>
-          //                                       Navigator.pop(context, 'Okay'),
-          //                                   child: const Text('Okay',
-          //                                       style: TextStyle(
-          //                                           fontFamily: 'Serif',
-          //                                           fontSize: 15)))
-          //                             ]))
-          //               }
-          //           },
-          //       style: ButtonStyle(
-          //           backgroundColor:
-          //               MaterialStateProperty.all<Color>(Colors.red)),
-          //       child: const Text(
-          //         "Unpair Unit",
-          //         style: TextStyle(fontSize: 20, fontFamily: 'Serif'),
-          //       )),
-          // ),
         ]
       ])),
       floatingActionButton: ElevatedButton(
