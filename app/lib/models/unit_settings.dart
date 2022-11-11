@@ -30,6 +30,6 @@ class UnitSettings {
     "serialNumber": serialNumber,
     "name": name,
     "isAcquisitioning": isAcquisitioning,
-    "unitParameters": jsonEncode(unitParameters)
+    "unitParameters": unitParameters!.toJson()
   };
 }
