@@ -4,23 +4,28 @@ import '../models/unit_settings.dart';
 
 class UnitSettingsPage extends StatefulWidget {
   const UnitSettingsPage(
-      {Key? key, required this.apiService, required this.unitId})
+      {Key? key,
+      required this.apiService,
+      required this.unitId,
+      required this.userId})
       : super(key: key);
 
   final ApiService apiService;
   final String unitId;
+  final String userId;
 
   @override
   // ignore: library_private_types_in_public_api
   _UnitSettingsPageState createState() =>
       // ignore: no_logic_in_create_state
-      _UnitSettingsPageState(apiService, unitId);
+      _UnitSettingsPageState(apiService, unitId, userId);
 }
 
 class _UnitSettingsPageState extends State<UnitSettingsPage> {
-  _UnitSettingsPageState(this._apiService, this._unitId);
+  _UnitSettingsPageState(this._apiService, this._unitId, this._userId);
 
   final String _unitId;
+  final String _userId;
   final ApiService _apiService;
   final TextEditingController _unitNameController = TextEditingController();
   final TextEditingController _humidityController = TextEditingController();
@@ -39,17 +44,20 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
 
     _unitNameController.text = unitSettings.name!;
 
-    if(unitSettings.unitParameters != null) {
-      if(unitSettings.unitParameters!.airFlow != null) {
-        _airFlowController.text = unitSettings.unitParameters!.airFlow.toString();
+    if (unitSettings.unitParameters != null) {
+      if (unitSettings.unitParameters!.airFlow != null) {
+        _airFlowController.text =
+            unitSettings.unitParameters!.airFlow.toString();
       }
 
-      if(unitSettings.unitParameters!.temperature != null) {
-        _temperatureController.text = unitSettings.unitParameters!.temperature.toString();
+      if (unitSettings.unitParameters!.temperature != null) {
+        _temperatureController.text =
+            unitSettings.unitParameters!.temperature.toString();
       }
 
-      if(unitSettings.unitParameters!.humidity != null) {
-        _humidityController.text = unitSettings.unitParameters!.humidity.toString();
+      if (unitSettings.unitParameters!.humidity != null) {
+        _humidityController.text =
+            unitSettings.unitParameters!.humidity.toString();
       }
     }
 
@@ -72,7 +80,7 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                 child: CircularProgressIndicator(),
               )
             : SingleChildScrollView(
-              child:Form(
+                child: Form(
                 key: _unitSettingsKey,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,29 +108,31 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                               children: [
                                 Column(children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: const [
-                                    Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(0, 10, 0, 27),
-                                        child: Text('Humidity: ',
-                                            style: TextStyle(
-                                                fontFamily: 'Serif',
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20)))
-                                  ]),
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: const [
+                                        Padding(
+                                            padding: EdgeInsets.fromLTRB(
+                                                0, 10, 0, 27),
+                                            child: Text('Humidity: ',
+                                                style: TextStyle(
+                                                    fontFamily: 'Serif',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20)))
+                                      ]),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: const [
-                                    Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(0, 27, 0, 27),
-                                        child: Text('Air Flow: ',
-                                            style: TextStyle(
-                                                fontFamily: 'Serif',
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20)))
-                                  ]),
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: const [
+                                        Padding(
+                                            padding: EdgeInsets.fromLTRB(
+                                                0, 27, 0, 27),
+                                            child: Text('Air Flow: ',
+                                                style: TextStyle(
+                                                    fontFamily: 'Serif',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20)))
+                                      ]),
                                   Row(children: const [
                                     Padding(
                                         padding:
@@ -198,8 +208,8 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                                               0.3,
                                           child: TextFormField(
                                             decoration: const InputDecoration(
-                                                border: OutlineInputBorder(),
-                                                ),
+                                              border: OutlineInputBorder(),
+                                            ),
                                             validator: (value) {
                                               if (value == null ||
                                                   value.isEmpty) {
@@ -219,18 +229,28 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                       ElevatedButton(
                           onPressed: () async {
                             if (_unitSettingsKey.currentState!.validate()) {
-                              unitSettings.name = _unitNameController.value.text;
-                              unitSettings.unitParameters!.humidity = double.parse(_humidityController.value.text);
-                              unitSettings.unitParameters!.temperature = double.parse(_temperatureController.value.text);
-                              unitSettings.unitParameters!.airFlow = double.parse(_airFlowController.value.text);
-                              var response = await _apiService.saveUnitSettings(unitSettings);
+                              unitSettings.name =
+                                  _unitNameController.value.text;
+                              unitSettings.unitParameters!.humidity =
+                                  double.parse(_humidityController.value.text);
+                              unitSettings.unitParameters!.temperature =
+                                  double.parse(
+                                      _temperatureController.value.text);
+                              unitSettings.unitParameters!.airFlow =
+                                  double.parse(_airFlowController.value.text);
+                              var response = await _apiService
+                                  .saveUnitSettings(unitSettings);
 
-                              if(response == 0) {
+                              if (response == 0) {
+                                // ignore: use_build_context_synchronously
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Settings Saved')),
+                                  const SnackBar(
+                                      content: Text('Settings Saved')),
                                 );
-                                Navigator.pop(context, unitSettings.name);
+                                // ignore: use_build_context_synchronously
+                                Navigator.pop(context, unitSettings);
                               } else {
+                                // ignore: use_build_context_synchronously
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Save Failed')),
                                 );
@@ -238,10 +258,91 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                             }
                           },
                           child: const Text('Save',
-                            style: TextStyle(
-                              fontFamily: 'Serif',
-                              fontSize: 20
-                            )))
+                              style: TextStyle(
+                                  fontFamily: 'Serif', fontSize: 20))),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.7,
+                        child: ElevatedButton(
+                            onPressed: () async => {
+                                  if (unitSettings.isAcquisitioning != null &&
+                                      !unitSettings.isAcquisitioning!)
+                                    {
+                                      if (await _apiService.removeUnitFromUser(
+                                              unitSettings.id!, _userId) ==
+                                          0)
+                                        {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text('Unit Unpaired')),
+                                          ),
+                                          unitSettings.isPaired = false,
+                                          Navigator.pop(context, unitSettings)
+                                        }
+                                      else
+                                        {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content:
+                                                    Text('Unpairing Failed')),
+                                          )
+                                        }
+                                    }
+                                  else
+                                    {
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              AlertDialog(
+                                                  title: const Text(
+                                                      'Error Pairing Device',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Serif',
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  content: const Text(
+                                                      'Cannot unpair unit during acquisition, please stop aquisition first',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Serif',
+                                                          fontSize: 20)),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(context,
+                                                              'Cancel'),
+                                                      child: const Text(
+                                                          'Cancel',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Serif',
+                                                              fontSize: 15)),
+                                                    ),
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context,
+                                                                'Okay'),
+                                                        child: const Text(
+                                                            'Okay',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Serif',
+                                                                fontSize: 15)))
+                                                  ]))
+                                    }
+                                },
+                            style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        Colors.red)),
+                            child: const Text(
+                              "Unpair Unit",
+                              style:
+                                  TextStyle(fontSize: 20, fontFamily: 'Serif'),
+                            )),
+                      ),
                     ]),
               )));
   }

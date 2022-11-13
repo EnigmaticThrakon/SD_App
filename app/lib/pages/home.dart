@@ -26,6 +26,7 @@ class _HomeState extends State<Home> {
   final ApiService _apiService = ApiService();
   final SignalRService _signalRService = SignalRService();
   late List<Unit> _userUnits = <Unit>[];
+  String? unpairedUnit = "";
   //late List<Unit> _units = null;
 
   @override
@@ -57,12 +58,17 @@ class _HomeState extends State<Home> {
     _signalRService.connect(deviceId);
 
     _signalRService.getOnStatusChanged().observe((unitValue) => {
-          if (_userUnits.any((unit) => unit.id == (unitValue.newValue as Unit).id!))
-          {
-            _userUnits[_userUnits.indexWhere((t) => t.id == (unitValue.newValue as Unit).id!)] = (unitValue.newValue as Unit)
-          } else {
-            _userUnits.add(unitValue.newValue as Unit),
-          },
+          if (_userUnits
+              .any((unit) => unit.id == (unitValue.newValue as Unit).id!))
+            {
+              _userUnits[_userUnits.indexWhere(
+                      (t) => t.id == (unitValue.newValue as Unit).id!)] =
+                  (unitValue.newValue as Unit)
+            }
+          else
+            {
+              _userUnits.add(unitValue.newValue as Unit),
+            },
           setState(() => {})
         });
   }
@@ -82,12 +88,20 @@ class _HomeState extends State<Home> {
               itemCount: _userUnits.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                    onTap: () => {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => UnitDetailed(
-                                  unit: _userUnits[index],
-                                  apiService: _apiService,
-                                  signalR: _signalRService)))
+                    onTap: () async => {
+                          unpairedUnit = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (context) => UnitDetailed(
+                                      unit: _userUnits[index],
+                                      apiService: _apiService,
+                                      signalR: _signalRService,
+                                      userId: _currentUser.id!))),
+                          if (unpairedUnit != null && unpairedUnit!.isNotEmpty)
+                            {
+                              _userUnits
+                                  .removeWhere((t) => t.id == unpairedUnit!),
+                              setState(() {})
+                            }
                         },
                     child: Card(
                         margin: const EdgeInsets.all(10.0),

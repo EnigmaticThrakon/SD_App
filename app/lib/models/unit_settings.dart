@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:app/models/unit_parameters.dart';
 
 class UnitSettings {
@@ -7,6 +5,7 @@ class UnitSettings {
   String? serialNumber;
   String? name;
   bool? isAcquisitioning;
+  bool? isPaired;
   UnitParameters? unitParameters;
 
   UnitSettings({
@@ -14,7 +13,8 @@ class UnitSettings {
     this.serialNumber,
     this.name,
     this.isAcquisitioning,
-    this.unitParameters
+    this.unitParameters,
+    this.isPaired
   });
   
   factory UnitSettings.fromJson(Map<String, dynamic> json) => UnitSettings(

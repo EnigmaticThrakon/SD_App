@@ -7,33 +7,38 @@ import 'package:intl/intl.dart';
 import 'package:mrx_charts/mrx_charts.dart';
 
 import '../models/unit.dart';
+import '../models/unit_settings.dart';
 
 class UnitDetailed extends StatefulWidget {
   const UnitDetailed(
       {Key? key,
       required this.unit,
       required this.apiService,
-      required this.signalR})
+      required this.signalR,
+      required this.userId})
       : super(key: key);
 
   final Unit unit;
+  final String userId;
   final ApiService apiService;
   final SignalRService signalR;
   @override
   // ignore: library_private_types_in_public_api
   _UnitDetailedState createState() =>
       //ignore: no_logic_in_create_state
-      _UnitDetailedState(unit, apiService, signalR);
+      _UnitDetailedState(unit, apiService, signalR, userId);
 }
 
 class _UnitDetailedState extends State<UnitDetailed> {
-  _UnitDetailedState(this._unit, this._apiService, this._signalRService);
+  _UnitDetailedState(
+      this._unit, this._apiService, this._signalRService, this._userId);
 
   final Unit _unit;
+  final String _userId;
   final ApiService _apiService;
   final SignalRService _signalRService;
   final TextEditingController _deviceNameController = TextEditingController();
-  var settingsResponse = null;
+  UnitSettings? settingsResponse = UnitSettings();
   bool isAcquisitioning = false;
   bool settingsChanged = false;
   bool startListening = true;
@@ -203,7 +208,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
     chartData.temperature.clear();
     chartData.airFlow.clear();
     chartData.humidity.clear();
-    
+
     super.dispose();
   }
 
@@ -221,7 +226,10 @@ class _UnitDetailedState extends State<UnitDetailed> {
   void setupSubscribers() {
     _signalRService.getOnChangeValue(startListening).observe(
         (value) => {
-              if ((value.newValue as MonitorData).chartTimestamp != null && (chartData.temperature.isEmpty || (value.newValue as MonitorData).chartTimestamp! > chartData.temperature.last.x))
+              if ((value.newValue as MonitorData).chartTimestamp != null &&
+                  (chartData.temperature.isEmpty ||
+                      (value.newValue as MonitorData).chartTimestamp! >
+                          chartData.temperature.last.x))
                 {
                   if ((value.newValue as MonitorData).temperature != null)
                     {
@@ -293,14 +301,24 @@ class _UnitDetailedState extends State<UnitDetailed> {
                       icon: const Icon(Icons.settings),
                       tooltip: 'Unit Settings',
                       onPressed: () async => {
-                        settingsResponse = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitSettingsPage(
-                        apiService: _apiService, unitId: _unit.id!))),
-
-                        if(settingsResponse != null) {
-                          _unit.name = settingsResponse,
-                          setState(() {})
-                        }
-                        })
+                            settingsResponse = await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (context) => UnitSettingsPage(
+                                        apiService: _apiService,
+                                        unitId: _unit.id!,
+                                        userId: _userId))),
+                            if (settingsResponse != null)
+                              {
+                                if (settingsResponse!.isPaired != null &&
+                                    !settingsResponse!.isPaired!)
+                                  {
+                                    Navigator.pop(
+                                        context, settingsResponse!.id),
+                                  },
+                                _unit.name = settingsResponse!.name,
+                                setState(() {})
+                              }
+                          })
                 ]),
       body: SingleChildScrollView(
           child: Column(children: <Widget>[
@@ -316,55 +334,66 @@ class _UnitDetailedState extends State<UnitDetailed> {
                 width: MediaQuery.of(context).size.width * 0.9,
                 // height: 80.0,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                  child: Text(_unit.name!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 25, fontFamily: 'Serif', fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
-                  maxLines: 1,
-                )),
+                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: Text(
+                      _unit.name!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 25,
+                          fontFamily: 'Serif',
+                          fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis),
+                      maxLines: 1,
+                    )),
               ),
             ],
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Door: ',
-                  style: TextStyle(
-                      fontFamily: 'Serif',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05,
+                  15,
+                  MediaQuery.of(context).size.width * 0.05,
+                  15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Door: ',
+                      style: TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                   Text(doorOpen ? 'Open' : 'Closed',
-                    style: TextStyle(
-                        fontFamily: 'Serif',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: doorOpen ? Colors.red : Colors.black))
-              ],
-            )
-          ),
+                      style: TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: doorOpen ? Colors.red : Colors.black))
+                ],
+              )),
           Padding(
-            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Temperature: ',
-                  style: TextStyle(
-                      fontFamily: 'Serif',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05,
+                  15,
+                  MediaQuery.of(context).size.width * 0.05,
+                  15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Temperature: ',
+                      style: TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                   Text(
-                    chartData.temperature.isNotEmpty
-                        ? chartData.temperature.last.value.toString()
-                        : '-',
-                    style: const TextStyle(
-                        fontFamily: 'Serif',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold))
-              ],
-            )
-          ),
+                      chartData.temperature.isNotEmpty
+                          ? chartData.temperature.last.value.toString()
+                          : '-',
+                      style: const TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold))
+                ],
+              )),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -382,26 +411,29 @@ class _UnitDetailedState extends State<UnitDetailed> {
                       child: CircularProgressIndicator(),
                     )),
           Padding(
-            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Airflow: ',
-                  style: TextStyle(
-                      fontFamily: 'Serif',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05,
+                  15,
+                  MediaQuery.of(context).size.width * 0.05,
+                  15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Airflow: ',
+                      style: TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                   Text(
-                    chartData.airFlow.isNotEmpty
-                        ? chartData.airFlow.last.value.toString()
-                        : '-',
-                    style: const TextStyle(
-                        fontFamily: 'Serif',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold))
-              ],
-            )
-          ),
+                      chartData.airFlow.isNotEmpty
+                          ? chartData.airFlow.last.value.toString()
+                          : '-',
+                      style: const TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold))
+                ],
+              )),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -419,26 +451,29 @@ class _UnitDetailedState extends State<UnitDetailed> {
                       child: CircularProgressIndicator(),
                     )),
           Padding(
-            padding: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width * 0.05, 15, MediaQuery.of(context).size.width * 0.05, 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Humidity: ',
-                  style: TextStyle(
-                      fontFamily: 'Serif',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.05,
+                  15,
+                  MediaQuery.of(context).size.width * 0.05,
+                  15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Humidity: ',
+                      style: TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                   Text(
-                    chartData.humidity.isNotEmpty
-                        ? chartData.humidity.last.value.toString()
-                        : '-',
-                    style: const TextStyle(
-                        fontFamily: 'Serif',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold))
-              ],
-            )
-          ),
+                      chartData.humidity.isNotEmpty
+                          ? chartData.humidity.last.value.toString()
+                          : '-',
+                      style: const TextStyle(
+                          fontFamily: 'Serif',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold))
+                ],
+              )),
           Container(
               constraints: BoxConstraints(
                 maxHeight: 200,
@@ -455,9 +490,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
                   : const Center(
                       child: CircularProgressIndicator(),
                     )),
-          const Padding(
-            padding: EdgeInsets.all(40)
-          )
+          const Padding(padding: EdgeInsets.all(40))
         ] else ...[
           SizedBox(
             height: 10.0,
@@ -469,12 +502,17 @@ class _UnitDetailedState extends State<UnitDetailed> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                  child: Text(_unit.name!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 25, fontFamily: 'Serif', fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
-                  maxLines: 1,
-                )),
+                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: Text(
+                      _unit.name!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 25,
+                          fontFamily: 'Serif',
+                          fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis),
+                      maxLines: 1,
+                    )),
               ),
             ],
           ),
@@ -482,7 +520,7 @@ class _UnitDetailedState extends State<UnitDetailed> {
       ])),
       floatingActionButton: ElevatedButton(
         onPressed: () async {
-          if(isAcquisitioning) {
+          if (isAcquisitioning) {
             await _apiService.stopAcquisitioning(_unit.id!);
             isAcquisitioning = !isAcquisitioning;
             startListening = false;
@@ -497,10 +535,11 @@ class _UnitDetailedState extends State<UnitDetailed> {
           setState(() => {});
         },
         style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(isAcquisitioning ? Colors.red : Colors.green)),
-        child: Text(isAcquisitioning ? 'Stop Acquisitioning' : 'Start Acquisitioning',
-          style: const TextStyle(fontSize: 20, fontFamily: 'Serif')),
+            backgroundColor: MaterialStateProperty.all<Color>(
+                isAcquisitioning ? Colors.red : Colors.green)),
+        child: Text(
+            isAcquisitioning ? 'Stop Acquisitioning' : 'Start Acquisitioning',
+            style: const TextStyle(fontSize: 20, fontFamily: 'Serif')),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
