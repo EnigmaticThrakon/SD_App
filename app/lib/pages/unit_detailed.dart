@@ -39,7 +39,10 @@ class _UnitDetailedState extends State<UnitDetailed> {
   final SignalRService _signalRService;
   final TextEditingController _deviceNameController = TextEditingController();
   UnitSettings? settingsResponse = UnitSettings();
-  bool isAcquisitioning = false;
+  late bool? isAcquisitioning = null;
+  DateTime? startTime = DateTime.now();
+  String durationString = "";
+  Duration acquisitionDuration = Duration(hours: 0);
   bool settingsChanged = false;
   bool startListening = true;
   ChartData chartData = ChartData();
@@ -216,7 +219,8 @@ class _UnitDetailedState extends State<UnitDetailed> {
     _deviceNameController.text = _unit.name == null ? '' : _unit.name!;
     isAcquisitioning = await _apiService.isAcquisitioning(_unit.id!);
 
-    if (isAcquisitioning) {
+    if (isAcquisitioning != null && isAcquisitioning!) {
+      startTime = await _apiService.getAcquisitionStartTime(_unit.id!);
       setupSubscribers();
     }
 
@@ -226,6 +230,13 @@ class _UnitDetailedState extends State<UnitDetailed> {
   void setupSubscribers() {
     _signalRService.getOnChangeValue(startListening).observe(
         (value) => {
+              if (startTime != null)
+                {
+                  acquisitionDuration = DateTime.now().difference(startTime!),
+                  durationString = acquisitionDuration.inDays > 0
+                      ? ('${acquisitionDuration.inDays} ${(acquisitionDuration.inHours % 24).toString().padLeft(2, '0')}:${(acquisitionDuration.inMinutes % 60).toString().padLeft(2, '0')}:${(acquisitionDuration.inSeconds % 60).toString().padLeft(2, '0')}')
+                      : ('${(acquisitionDuration.inHours % 24).toString().padLeft(2, '0')}:${(acquisitionDuration.inMinutes % 60).toString().padLeft(2, '0')}:${(acquisitionDuration.inSeconds % 60).toString().padLeft(2, '0')}')
+                },
               if ((value.newValue as MonitorData).chartTimestamp != null &&
                   (chartData.temperature.isEmpty ||
                       (value.newValue as MonitorData).chartTimestamp! >
@@ -320,214 +331,239 @@ class _UnitDetailedState extends State<UnitDetailed> {
                               }
                           })
                 ]),
-      body: SingleChildScrollView(
-          child: Column(children: <Widget>[
-        if (isAcquisitioning) ...[
-          SizedBox(
-            height: 10.0,
-            child: Container(),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
-                // height: 80.0,
-                child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                    child: Text(
-                      _unit.name!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 25,
-                          fontFamily: 'Serif',
-                          fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis),
-                      maxLines: 1,
+      body: isAcquisitioning == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              child: Column(children: <Widget>[
+              if (isAcquisitioning!) ...[
+                SizedBox(
+                  height: 10.0,
+                  child: Container(),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      // height: 80.0,
+                      child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text(
+                            _unit.name!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 25,
+                                fontFamily: 'Serif',
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis),
+                            maxLines: 1,
+                          )),
+                    ),
+                  ],
+                ),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 0.05,
+                        15,
+                        MediaQuery.of(context).size.width * 0.05,
+                        15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Acquisition Duration: ',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        Text(durationString,
+                            style: const TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold))
+                      ],
                     )),
-              ),
-            ],
-          ),
-          Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05,
-                  15,
-                  MediaQuery.of(context).size.width * 0.05,
-                  15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Door: ',
-                      style: TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  Text(doorOpen ? 'Open' : 'Closed',
-                      style: TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: doorOpen ? Colors.red : Colors.black))
-                ],
-              )),
-          Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05,
-                  15,
-                  MediaQuery.of(context).size.width * 0.05,
-                  15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Temperature: ',
-                      style: TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  Text(
-                      chartData.temperature.isNotEmpty
-                          ? chartData.temperature.last.value.toString()
-                          : '-',
-                      style: const TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold))
-                ],
-              )),
-          Container(
-              constraints: BoxConstraints(
-                maxHeight: 200,
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-              ),
-              // padding: const EdgeInsets.all(24.0),
-              child: chartData.temperature.length > 2
-                  ? Chart(
-                      layers: tempChartLayers(),
-                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
-                      //   bottom: 12.0,
-                      // ),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 0.05,
+                        15,
+                        MediaQuery.of(context).size.width * 0.05,
+                        15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Door: ',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        Text(doorOpen ? 'Open' : 'Closed',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: doorOpen ? Colors.red : Colors.black))
+                      ],
                     )),
-          Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05,
-                  15,
-                  MediaQuery.of(context).size.width * 0.05,
-                  15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Airflow: ',
-                      style: TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  Text(
-                      chartData.airFlow.isNotEmpty
-                          ? chartData.airFlow.last.value.toString()
-                          : '-',
-                      style: const TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold))
-                ],
-              )),
-          Container(
-              constraints: BoxConstraints(
-                maxHeight: 200,
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-              ),
-              // padding: const EdgeInsets.all(24.0),
-              child: chartData.airFlow.length > 2
-                  ? Chart(
-                      layers: airFlowChartLayers(),
-                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
-                      //   bottom: 12.0,
-                      // ),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 0.05,
+                        15,
+                        MediaQuery.of(context).size.width * 0.05,
+                        15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Temperature: ',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        Text(
+                            chartData.temperature.isNotEmpty
+                                ? chartData.temperature.last.value.toString()
+                                : '-',
+                            style: const TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold))
+                      ],
                     )),
-          Padding(
-              padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.05,
-                  15,
-                  MediaQuery.of(context).size.width * 0.05,
-                  15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Humidity: ',
-                      style: TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  Text(
-                      chartData.humidity.isNotEmpty
-                          ? chartData.humidity.last.value.toString()
-                          : '-',
-                      style: const TextStyle(
-                          fontFamily: 'Serif',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold))
-                ],
-              )),
-          Container(
-              constraints: BoxConstraints(
-                maxHeight: 200,
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-              ),
-              // padding: const EdgeInsets.all(24.0),
-              child: chartData.humidity.length > 2
-                  ? Chart(
-                      layers: humidityChartLayers(),
-                      // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
-                      //   bottom: 12.0,
-                      // ),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
+                Container(
+                    constraints: BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                    // padding: const EdgeInsets.all(24.0),
+                    child: chartData.temperature.length > 2
+                        ? Chart(
+                            layers: tempChartLayers(),
+                            // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                            //   bottom: 12.0,
+                            // ),
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 0.05,
+                        15,
+                        MediaQuery.of(context).size.width * 0.05,
+                        15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Airflow: ',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        Text(
+                            chartData.airFlow.isNotEmpty
+                                ? chartData.airFlow.last.value.toString()
+                                : '-',
+                            style: const TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold))
+                      ],
                     )),
-          const Padding(padding: EdgeInsets.all(40))
-        ] else ...[
-          SizedBox(
-            height: 10.0,
-            child: Container(),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
-                child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                    child: Text(
-                      _unit.name!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 25,
-                          fontFamily: 'Serif',
-                          fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis),
-                      maxLines: 1,
+                Container(
+                    constraints: BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                    // padding: const EdgeInsets.all(24.0),
+                    child: chartData.airFlow.length > 2
+                        ? Chart(
+                            layers: airFlowChartLayers(),
+                            // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                            //   bottom: 12.0,
+                            // ),
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 0.05,
+                        15,
+                        MediaQuery.of(context).size.width * 0.05,
+                        15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Humidity: ',
+                            style: TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        Text(
+                            chartData.humidity.isNotEmpty
+                                ? chartData.humidity.last.value.toString()
+                                : '-',
+                            style: const TextStyle(
+                                fontFamily: 'Serif',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold))
+                      ],
                     )),
-              ),
-            ],
-          ),
-        ]
-      ])),
+                Container(
+                    constraints: BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                    // padding: const EdgeInsets.all(24.0),
+                    child: chartData.humidity.length > 2
+                        ? Chart(
+                            layers: humidityChartLayers(),
+                            // padding: const EdgeInsets.symmetric(horizontal: 30.0).copyWith(
+                            //   bottom: 12.0,
+                            // ),
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
+                const Padding(padding: EdgeInsets.all(40))
+              ] else ...[
+                SizedBox(
+                  height: 10.0,
+                  child: Container(),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text(
+                            _unit.name!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 25,
+                                fontFamily: 'Serif',
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis),
+                            maxLines: 1,
+                          )),
+                    ),
+                  ],
+                ),
+              ]
+            ])),
       floatingActionButton: ElevatedButton(
         onPressed: () async {
-          if (isAcquisitioning) {
+          if (isAcquisitioning != null && isAcquisitioning!) {
             await _apiService.stopAcquisitioning(_unit.id!);
-            isAcquisitioning = !isAcquisitioning;
+            isAcquisitioning = false;
             startListening = false;
             setupSubscribers();
           } else {
-            await _apiService.startAcquisition(_unit.id!);
-            isAcquisitioning = !isAcquisitioning;
+            startTime = await _apiService.startAcquisition(_unit.id!);
+            isAcquisitioning = true;
             startListening = true;
             setupSubscribers();
           }
@@ -536,9 +572,13 @@ class _UnitDetailedState extends State<UnitDetailed> {
         },
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
-                isAcquisitioning ? Colors.red : Colors.green)),
+                (isAcquisitioning != null && isAcquisitioning!)
+                    ? Colors.red
+                    : Colors.green)),
         child: Text(
-            isAcquisitioning ? 'Stop Acquisitioning' : 'Start Acquisitioning',
+            (isAcquisitioning != null && isAcquisitioning!)
+                ? 'Stop Acquisitioning'
+                : 'Start Acquisitioning',
             style: const TextStyle(fontSize: 20, fontFamily: 'Serif')),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
