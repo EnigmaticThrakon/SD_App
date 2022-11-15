@@ -137,31 +137,20 @@ class ApiService {
     return 3;
   }
 
-  Future<int> startAcquisition(String unitId) async {
+  Future<DateTime?> startAcquisition(String unitId) async {
     try {
       var url = Uri.parse('$_baseUrl${UnitApiConsts.startAcquisition}/$unitId');
       var response = await http.put(url, headers: _headers, body: "{}");
 
-      switch(response.statusCode) {
-        case 200: {
-          return 0;
-        }
-        case 404: {
-          return 1;
-        }
-        case 400: {
-          return 2;
-        }
-        default: {
-          return 3;
-        }
+      if(response.statusCode == 200) {
+        return DateTime.parse(jsonDecode(response.body));
       }
 
     } catch(e) {
       log(e.toString());
     }
 
-    return 3;
+    return null;
   }
 
   Future<int> stopAcquisitioning(String unitId) async {
@@ -217,6 +206,22 @@ class ApiService {
     }
 
     return UnitSettings();
+  }
+
+  Future<DateTime?> getAcquisitionStartTime(String unitId) async {
+    try
+    {
+      var url = Uri.parse('$_baseUrl${UnitApiConsts.startTime}/$unitId');
+      var response = await http.get(url);
+
+      if(response.statusCode == 200) {
+        return DateTime.parse(jsonDecode(response.body));
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return null;
   }
 
   Future<int> saveUnitSettings(UnitSettings settings) async {
