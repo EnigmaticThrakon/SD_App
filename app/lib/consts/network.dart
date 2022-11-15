@@ -21,4 +21,5 @@ class UnitApiConsts {
   static String isAcquisitioning = "${basePath}is-acquisitioning";
   static String getConfigurations = "${basePath}get-configurations";
   static String updateConfigurations = "${basePath}update-configurations";
+  static String startTime = "${basePath}acquisition-start-time";
 }
