@@ -296,7 +296,7 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
                                           builder: (BuildContext context) =>
                                               AlertDialog(
                                                   title: const Text(
-                                                      'Error Pairing Device',
+                                                      'Error UnPairing Device',
                                                       style: TextStyle(
                                                           fontFamily: 'Serif',
                                                           fontSize: 20,
