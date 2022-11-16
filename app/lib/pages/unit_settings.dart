@@ -42,23 +42,21 @@ class _UnitSettingsPageState extends State<UnitSettingsPage> {
   void _initializeApp() async {
     unitSettings = await _apiService.getUnitSettings(_unitId);
 
-    _unitNameController.text = unitSettings.name!;
+    _unitNameController.text =
+        unitSettings.name == null ? _unitId : unitSettings.name!;
 
     if (unitSettings.unitParameters != null) {
-      if (unitSettings.unitParameters!.airFlow != null) {
-        _airFlowController.text =
-            unitSettings.unitParameters!.airFlow.toString();
-      }
+      _airFlowController.text = unitSettings.unitParameters!.airFlow.toString();
 
-      if (unitSettings.unitParameters!.temperature != null) {
-        _temperatureController.text =
-            unitSettings.unitParameters!.temperature.toString();
-      }
+      _temperatureController.text =
+          unitSettings.unitParameters!.temperature.toString();
 
-      if (unitSettings.unitParameters!.humidity != null) {
-        _humidityController.text =
-            unitSettings.unitParameters!.humidity.toString();
-      }
+      _humidityController.text =
+          unitSettings.unitParameters!.humidity.toString();
+    } else {
+      _airFlowController.text = "0.0";
+      _temperatureController.text = "0.0";
+      _humidityController.text = "0.0";
     }
 
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
