@@ -563,6 +563,9 @@ class _UnitDetailedState extends State<UnitDetailed> {
             setupSubscribers();
           } else {
             startTime = await _apiService.startAcquisition(_unit.id!);
+            chartData.temperature.clear();
+            chartData.airFlow.clear();
+            chartData.humidity.clear();
             isAcquisitioning = true;
             startListening = true;
             setupSubscribers();
